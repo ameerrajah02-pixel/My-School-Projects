@@ -12,7 +12,8 @@ import {
   FileBarChart,
   Settings,
   Star,
-  History
+  History,
+  CalendarClock
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -41,8 +42,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
       {/* Sidebar - Hidden on print */}
       <aside className="w-64 bg-slate-800 text-white flex flex-col flex-shrink-0 print:hidden">
         <div className="p-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold tracking-tight">Sulaimaniya<br/><span className="text-blue-400">Sports 2026</span></h1>
-          <div className="mt-4 text-xs uppercase tracking-wider text-slate-400">
+          <div className="flex flex-col items-center mb-6">
+              <div className="bg-slate-700 p-3 rounded-full mb-3">
+                 <Trophy className="text-blue-400" size={32} />
+              </div>
+              <h1 className="text-xl font-bold tracking-tight text-center leading-tight">Sulaimaniya<br/><span className="text-blue-400">Sports 2026</span></h1>
+          </div>
+          <div className="mt-2 text-xs uppercase tracking-wider text-slate-400 text-center">
             {user.role} {user.house ? `- ${user.house}` : ''}
           </div>
         </div>
@@ -59,6 +65,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
               <button onClick={() => navigate('/events')} className={navItemClass('/events')}>
                 <Trophy size={20} />
                 <span>Event Management</span>
+              </button>
+              <button onClick={() => navigate('/scheduler')} className={navItemClass('/scheduler')}>
+                <CalendarClock size={20} />
+                <span>Event Scheduler</span>
               </button>
               <button onClick={() => navigate('/students')} className={navItemClass('/students')}>
                 <Users size={20} />

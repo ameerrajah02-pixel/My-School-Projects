@@ -23,8 +23,8 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
         <div className="bg-blue-600 p-8 text-center">
-          <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-            <Trophy className="text-blue-600" size={32} />
+          <div className="mx-auto w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <Trophy className="text-white" size={32} />
           </div>
           <h1 className="text-2xl font-bold text-white">Sulaimaniya College</h1>
           <p className="text-blue-100">Inter House Sports Meet 2026</p>
@@ -70,18 +70,9 @@ export const Login: React.FC = () => {
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors mt-2"
             >
-              Access System
+              Login
             </button>
           </form>
-
-          <div className="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500">
-            <p className="font-semibold mb-2">Default Passwords:</p>
-            <ul className="space-y-1">
-              <li>Admin: <code className="bg-gray-100 px-1 rounded">admin123</code></li>
-              <li>Captains: <code className="bg-gray-100 px-1 rounded">1234</code></li>
-              <li>Judge: <code className="bg-gray-100 px-1 rounded">judge123</code></li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

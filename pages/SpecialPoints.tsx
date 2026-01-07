@@ -174,9 +174,9 @@ export const SpecialPoints: React.FC = () => {
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
                                             <span className={`text-xs font-bold px-2 py-0.5 w-fit rounded 
-                                                ${sp.house === House.ANKARA ? 'bg-red-100 text-red-700' : 
-                                                  sp.house === House.BAGDAD ? 'bg-green-100 text-green-700' : 
-                                                  'bg-blue-100 text-blue-700'}`}>
+                                                ${sp.house === House.ANKARA ? 'bg-purple-100 text-purple-700' : 
+                                                  sp.house === House.BAGDAD ? 'bg-pink-100 text-pink-700' : 
+                                                  'bg-red-100 text-red-900'}`}>
                                                 {sp.house}
                                             </span>
                                             {studentName && (

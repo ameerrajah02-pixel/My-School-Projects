@@ -4,12 +4,14 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Students } from './pages/Students';
 import { Events } from './pages/Events';
+import { EventScheduler } from './pages/EventScheduler';
 import { RegistrationPage } from './pages/Registration';
 import { Judging } from './pages/Judging';
 import { Reports } from './pages/Reports';
 import { UserManagement } from './pages/UserManagement';
 import { SpecialPoints } from './pages/SpecialPoints';
 import { AuditLogs } from './pages/AuditLogs';
+import { PublicLanding } from './pages/PublicLanding';
 import { Layout } from './components/Layout';
 import { getCurrentUser } from './services/storage';
 import { User } from './types';
@@ -25,7 +27,7 @@ const ProtectedRoute: React.FC<{ children: (user: User) => React.ReactNode }> = 
   }, [location]);
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <Layout user={user}>{children(user)}</Layout>;
@@ -35,7 +37,8 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<PublicLanding />} />
+        <Route path="/login" element={<Login />} />
         
         <Route path="/dashboard" element={
           <ProtectedRoute>
@@ -52,6 +55,12 @@ const App: React.FC = () => {
         <Route path="/events" element={
           <ProtectedRoute>
             {() => <Events />}
+          </ProtectedRoute>
+        } />
+
+        <Route path="/scheduler" element={
+          <ProtectedRoute>
+            {() => <EventScheduler />}
           </ProtectedRoute>
         } />
 

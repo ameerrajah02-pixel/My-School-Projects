@@ -53,6 +53,7 @@ export interface Event {
   genderCategory: 'Boys' | 'Girls' | 'Mixed';
   status: EventStatus;
   judgeId?: string; // ID of the assigned judge
+  schedule?: string; // ISO string for date and time
 }
 
 export interface Registration {

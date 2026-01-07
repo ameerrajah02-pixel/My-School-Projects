@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Event, EventCategory, EventStatus, User, UserRole } from '../types';
 import { getEvents, saveEvent, deleteEvent, getUsers } from '../services/storage';
-import { Plus, Trash2, Edit2, Search, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Search, X, Calendar } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 export const Events: React.FC = () => {
@@ -12,6 +12,7 @@ export const Events: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
+  // Form Data (removed schedule)
   const [formData, setFormData] = useState<Partial<Event>>({
     name: '',
     category: EventCategory.ATHLETIC,
@@ -24,7 +25,6 @@ export const Events: React.FC = () => {
 
   const loadData = () => {
     setEvents(getEvents());
-    // Filter users to find Judges
     setJudges(getUsers().filter(u => u.role === UserRole.JUDGE));
   };
 
@@ -36,6 +36,9 @@ export const Events: React.FC = () => {
     e.preventDefault();
     if (!formData.name) return;
 
+    // When saving details, preserve the existing schedule if editing, or undefined if new
+    const existingSchedule = editingEvent?.schedule;
+
     const payload: Event = {
       id: editingEvent ? editingEvent.id : uuidv4(),
       name: formData.name!,
@@ -44,7 +47,8 @@ export const Events: React.FC = () => {
       isTeamEvent: formData.isTeamEvent!,
       genderCategory: formData.genderCategory as any,
       status: formData.status!,
-      judgeId: formData.judgeId || undefined
+      judgeId: formData.judgeId || undefined,
+      schedule: existingSchedule // Preserve schedule
     };
 
     saveEvent(payload);
@@ -62,7 +66,15 @@ export const Events: React.FC = () => {
   const openModal = (event?: Event) => {
     if (event) {
       setEditingEvent(event);
-      setFormData(event);
+      setFormData({
+        name: event.name,
+        category: event.category,
+        ageGroup: event.ageGroup,
+        isTeamEvent: event.isTeamEvent,
+        genderCategory: event.genderCategory,
+        status: event.status,
+        judgeId: event.judgeId || ''
+      });
     } else {
       setEditingEvent(null);
       setFormData({
@@ -88,6 +100,13 @@ export const Events: React.FC = () => {
     const matchesStatus = statusFilter === 'ALL' || e.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const formatSchedule = (dateString?: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -129,70 +148,80 @@ export const Events: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase tracking-wider">
-            <tr>
-              <th className="px-6 py-4">Event Name</th>
-              <th className="px-6 py-4">Category</th>
-              <th className="px-6 py-4">Age Group</th>
-              <th className="px-6 py-4">Gender</th>
-              <th className="px-6 py-4">Type</th>
-              <th className="px-6 py-4">Assigned Judge</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {filteredEvents.map(event => {
-                const judgeName = judges.find(j => j.id === event.judgeId)?.username || 'Unassigned';
-                return (
-                  <tr key={event.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-gray-900">{event.name}</td>
-                    <td className="px-6 py-4 text-gray-600">{event.category}</td>
-                    <td className="px-6 py-4 text-gray-600">{event.ageGroup}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                      <span className={`px-2 py-1 rounded text-xs font-medium border ${
-                        event.genderCategory === 'Boys' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                        event.genderCategory === 'Girls' ? 'bg-pink-50 text-pink-700 border-pink-200' :
-                        'bg-purple-50 text-purple-700 border-purple-200'
-                      }`}>
-                        {event.genderCategory}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{event.isTeamEvent ? 'Team' : 'Individual'}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                        <span className={`text-xs px-2 py-1 rounded border ${event.judgeId ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
-                            {judgeName}
-                        </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium 
-                        ${event.status === EventStatus.OPEN ? 'bg-green-100 text-green-700' : 
-                          event.status === EventStatus.COMPLETED ? 'bg-gray-100 text-gray-700' : 
-                          'bg-red-100 text-red-700'}`}>
-                        {event.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      <button onClick={() => openModal(event)} className="text-blue-600 hover:text-blue-800 p-1">
-                        <Edit2 size={16} />
-                      </button>
-                      <button onClick={() => handleDelete(event.id)} className="text-red-500 hover:text-red-700 p-1">
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-            })}
-            {filteredEvents.length === 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase tracking-wider">
               <tr>
-                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                  No events found matching filters.
-                </td>
+                <th className="px-6 py-4">Event Name</th>
+                <th className="px-6 py-4">Schedule</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4">Age / Gender</th>
+                <th className="px-6 py-4">Type</th>
+                <th className="px-6 py-4">Assigned Judge</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredEvents.map(event => {
+                  const judgeName = judges.find(j => j.id === event.judgeId)?.username || 'Unassigned';
+                  return (
+                    <tr key={event.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-gray-900">{event.name}</td>
+                      <td className="px-6 py-4 text-gray-600 text-sm whitespace-nowrap">
+                          {event.schedule ? (
+                              <div className="flex items-center">
+                                  <Calendar size={14} className="mr-1.5 text-blue-500"/>
+                                  {formatSchedule(event.schedule)}
+                              </div>
+                          ) : <span className="text-gray-300">-</span>}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{event.category}</td>
+                      <td className="px-6 py-4 text-gray-600 text-sm">
+                          {event.ageGroup}
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${
+                              event.genderCategory === 'Boys' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                              event.genderCategory === 'Girls' ? 'bg-pink-50 text-pink-700 border-pink-100' :
+                              'bg-purple-50 text-purple-700 border-purple-100'
+                          }`}>
+                              {event.genderCategory}
+                          </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{event.isTeamEvent ? 'Team' : 'Indiv.'}</td>
+                      <td className="px-6 py-4 text-gray-600">
+                          <span className={`text-xs px-2 py-1 rounded border ${event.judgeId ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                              {judgeName}
+                          </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                          ${event.status === EventStatus.OPEN ? 'bg-green-100 text-green-700' : 
+                            event.status === EventStatus.COMPLETED ? 'bg-gray-100 text-gray-700' : 
+                            'bg-red-100 text-red-700'}`}>
+                          {event.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button onClick={() => openModal(event)} className="text-blue-600 hover:text-blue-800 p-1">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(event.id)} className="text-red-500 hover:text-red-700 p-1">
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+              })}
+              {filteredEvents.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    No events found matching filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {isModalOpen && (
@@ -200,7 +229,7 @@ export const Events: React.FC = () => {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
              <div className="flex justify-between items-center p-6 border-b border-gray-100">
               <h3 className="text-lg font-bold text-gray-900">
-                {editingEvent ? 'Edit Event' : 'Add New Event'}
+                {editingEvent ? 'Edit Event Details' : 'Add New Event'}
               </h3>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                 <X size={20} />

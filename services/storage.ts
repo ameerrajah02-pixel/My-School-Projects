@@ -44,9 +44,9 @@ const seedData = () => {
 
   if (!localStorage.getItem(STORAGE_KEYS.EVENTS)) {
     const defaultEvents: Event[] = [
-      { id: 'e1', name: '100m Sprint', category: EventCategory.ATHLETIC, ageGroup: 'Under 20', isTeamEvent: false, genderCategory: 'Boys', status: EventStatus.OPEN },
-      { id: 'e2', name: 'Relay 4x100m', category: EventCategory.ATHLETIC, ageGroup: 'Under 18', isTeamEvent: true, genderCategory: 'Girls', status: EventStatus.OPEN },
-      { id: 'e3', name: 'Volleyball', category: EventCategory.MAJOR_GAME, ageGroup: 'Open', isTeamEvent: true, genderCategory: 'Boys', status: EventStatus.OPEN },
+      { id: 'e1', name: '100m Sprint', category: EventCategory.ATHLETIC, ageGroup: 'Under 20', isTeamEvent: false, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-15T09:00' },
+      { id: 'e2', name: 'Relay 4x100m', category: EventCategory.ATHLETIC, ageGroup: 'Under 18', isTeamEvent: true, genderCategory: 'Girls', status: EventStatus.OPEN, schedule: '2026-03-15T11:30' },
+      { id: 'e3', name: 'Volleyball', category: EventCategory.MAJOR_GAME, ageGroup: 'Open', isTeamEvent: true, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-16T15:00' },
     ];
     localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(defaultEvents));
   }

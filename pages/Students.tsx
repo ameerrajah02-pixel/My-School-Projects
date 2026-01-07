@@ -226,7 +226,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
             <span>Print List</span>
           </button>
 
-          {user.role !== UserRole.JUDGE && (
+          {user.role === UserRole.ADMIN && (
             <button 
               onClick={() => openModal()}
               className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -307,7 +307,9 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">Age / Gender</th>
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">House</th>
               <th className="px-6 py-4 print:px-2 print:py-2 w-1/3 print:border print:border-gray-400">Registered Events</th>
-              <th className="px-6 py-4 text-right print:hidden">Actions</th>
+              {user.role === UserRole.ADMIN && (
+                <th className="px-6 py-4 text-right print:hidden">Actions</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 print:divide-gray-300">
@@ -322,9 +324,9 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
                   <td className="px-6 py-4 text-gray-600 print:px-2 print:py-2 print:border print:border-gray-400 print:text-black">{age} / {student.gender[0]}</td>
                   <td className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400 print:text-black">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium print:border-none print:p-0 print:text-black
-                      ${student.house === House.ANKARA ? 'bg-red-100 text-red-700' : 
-                        student.house === House.BAGDAD ? 'bg-green-100 text-green-700' : 
-                        'bg-blue-100 text-blue-700'}`}>
+                      ${student.house === House.ANKARA ? 'bg-purple-100 text-purple-700' : 
+                        student.house === House.BAGDAD ? 'bg-pink-100 text-pink-700' : 
+                        'bg-red-100 text-red-900'}`}>
                       {student.house}
                     </span>
                   </td>
@@ -341,7 +343,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
                       <span className="text-gray-400 italic text-xs print:text-gray-500">-</span>
                     )}
                   </td>
-                  {user.role !== UserRole.JUDGE && (
+                  {user.role === UserRole.ADMIN && (
                     <td className="px-6 py-4 text-right space-x-2 print:hidden">
                       <button onClick={() => openModal(student)} className="text-blue-600 hover:text-blue-800 p-1">
                         <Edit2 size={16} />
@@ -356,7 +358,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
             })}
             {filteredStudents.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500 print:border print:border-gray-400">
+                <td colSpan={user.role === UserRole.ADMIN ? 7 : 6} className="px-6 py-12 text-center text-gray-500 print:border print:border-gray-400">
                   No students found matching your criteria.
                 </td>
               </tr>
@@ -452,14 +454,13 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
                    </select>
                 </div>
 
-                {user.role === UserRole.ADMIN && (
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">House</label>
-                     <select value={formData.house} onChange={e => setFormData({...formData, house: e.target.value as House})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                       {Object.values(House).map(h => <option key={h} value={h}>{h}</option>)}
-                     </select>
-                   </div>
-                )}
+                {/* Only Admin can open modal now, so always show house selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">House</label>
+                  <select value={formData.house} onChange={e => setFormData({...formData, house: e.target.value as House})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    {Object.values(House).map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end space-x-3">

@@ -64,7 +64,7 @@ export const PublicLanding: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<{
     houseStats: HouseStat[];
-    recentResults: (Result & { eventName: string; winner: string; winnerHouse?: House })[];
+    recentResults: (Result & { eventName: string; winner: string; winnerHouse?: House; second?: string; third?: string })[];
     upcomingEvents: Event[];
     allScheduledEvents: Event[];
     cumulativeData: any[];
@@ -211,12 +211,21 @@ export const PublicLanding: React.FC = () => {
     // 2. Recent Results
     const processedResults = [...results].reverse().slice(0, 5).map(r => {
       const event = events.find(e => e.id === r.eventId);
-      const winner = students.find(s => s.id === r.firstPlaceStudentId);
+      
+      const getStudentName = (id?: string) => {
+          const s = students.find(std => std.id === id);
+          return s ? s.fullName : null;
+      };
+
+      const winnerStudent = students.find(s => s.id === r.firstPlaceStudentId);
+      
       return {
         ...r,
         eventName: event ? event.name : 'Unknown Event',
-        winner: winner ? winner.fullName : 'Unknown',
-        winnerHouse: winner?.house
+        winner: winnerStudent ? winnerStudent.fullName : 'Unknown',
+        winnerHouse: winnerStudent?.house,
+        second: getStudentName(r.secondPlaceStudentId) || undefined,
+        third: getStudentName(r.thirdPlaceStudentId) || undefined
       };
     });
 
@@ -451,23 +460,37 @@ export const PublicLanding: React.FC = () => {
                         <div className="p-8 text-center text-gray-400">No events completed yet.</div>
                     ) : (
                         stats.recentResults.map((r) => (
-                            <div key={r.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
-                                <div>
+                            <div key={r.id} className="p-4 hover:bg-gray-50">
+                                <div className="flex justify-between items-start mb-2">
                                     <p className="font-medium text-gray-900">{r.eventName}</p>
-                                    <p className="text-sm text-gray-500 flex items-center mt-1">
-                                        <Trophy size={14} className="mr-1 text-yellow-500" />
-                                        Winner: {r.winner}
-                                    </p>
+                                    {r.winnerHouse && (
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                            r.winnerHouse === House.ANKARA ? 'bg-purple-100 text-purple-700' :
+                                            r.winnerHouse === House.BAGDAD ? 'bg-pink-100 text-pink-700' :
+                                            'bg-red-100 text-red-900'
+                                        }`}>
+                                            {r.winnerHouse}
+                                        </span>
+                                    )}
                                 </div>
-                                {r.winnerHouse && (
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                                        r.winnerHouse === House.ANKARA ? 'bg-purple-100 text-purple-700' :
-                                        r.winnerHouse === House.BAGDAD ? 'bg-pink-100 text-pink-700' :
-                                        'bg-red-100 text-red-900'
-                                    }`}>
-                                        {r.winnerHouse}
-                                    </span>
-                                )}
+                                <div className="space-y-1 text-sm">
+                                    <div className="flex items-center text-gray-700">
+                                        <span className="w-6 text-center text-yellow-500 font-bold mr-2">1st</span>
+                                        <span className="font-medium">{r.winner}</span>
+                                    </div>
+                                    {r.second && (
+                                        <div className="flex items-center text-gray-600">
+                                            <span className="w-6 text-center text-gray-400 font-bold mr-2">2nd</span>
+                                            <span>{r.second}</span>
+                                        </div>
+                                    )}
+                                    {r.third && (
+                                        <div className="flex items-center text-gray-600">
+                                            <span className="w-6 text-center text-orange-400 font-bold mr-2">3rd</span>
+                                            <span>{r.third}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         ))
                     )}

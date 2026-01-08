@@ -292,7 +292,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input 
             type="text" 
-            placeholder="Search by name or admission number..." 
+            placeholder="Search by name with initials or admission number..." 
             className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -383,7 +383,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
           <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase tracking-wider print:bg-gray-200 print:text-black print:border-b-2 print:border-gray-800">
             <tr>
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">Admsn No</th>
-              <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">Name</th>
+              <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">Name with Initials</th>
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">Grade</th>
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">Age / Gender</th>
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">House</th>
@@ -464,8 +464,8 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input required type="text" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name with Initials</label>
+                  <input required type="text" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. A. B. Perera" />
                 </div>
                 
                 <div>

@@ -163,11 +163,35 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
     }
   };
 
+  // Helper: check if student matches event age
+  const checkAgeEligibility = (dob: string, ageGroup: string): boolean => {
+      if (!dob) return false;
+      const birthYear = new Date(dob).getFullYear();
+      if (isNaN(birthYear)) return false;
+      const age = 2026 - birthYear;
+
+      switch (ageGroup) {
+          case 'Under 12': return [10, 11].includes(age);
+          case 'Under 14': return [12, 13].includes(age);
+          case 'Under 16': return [14, 15].includes(age);
+          case 'Under 18': return [16, 17].includes(age);
+          case 'Under 20': return [18, 19].includes(age);
+          case 'Under 15': return [10, 11, 12, 13, 14].includes(age);
+          case 'Over 15': return age >= 16;
+          case 'Open': return true;
+          default: return true;
+      }
+  };
+
   // Filter students eligible for the selected event
   const eligibleStudents = selectedEvent ? students.filter(s => {
-    // Gender Check
+    // 1. Gender Check
     if (selectedEvent.genderCategory === 'Boys' && s.gender !== Gender.MALE) return false;
     if (selectedEvent.genderCategory === 'Girls' && s.gender !== Gender.FEMALE) return false;
+    
+    // 2. Age Check
+    if (!checkAgeEligibility(s.dateOfBirth, selectedEvent.ageGroup)) return false;
+
     return true;
   }) : [];
 
@@ -217,6 +241,10 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider w-fit mt-1 md:mt-0 ${selectedEvent.isTeamEvent ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                     {selectedEvent.isTeamEvent ? 'Team Event' : 'Individual Event'}
                  </span>
+                 {/* Age Group Badge */}
+                 <span className="ml-2 px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700">
+                    {selectedEvent.ageGroup}
+                 </span>
              </div>
              
              <div className="flex items-center space-x-4">
@@ -245,7 +273,7 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
           <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
             {eligibleStudents.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
-                  No eligible students found matching the event criteria (Gender/House).
+                  No eligible students found matching the criteria (Gender, Age Group).
                 </div>
             ) : (
                 eligibleStudents.map(student => {
@@ -254,6 +282,7 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
                         : registrations.some(r => r.eventId === selectedEvent.id && r.studentId === student.id);
 
                     const indivCount = getStudentIndividualCount(student.id);
+                    const age = 2026 - new Date(student.dateOfBirth).getFullYear();
                     
                     // Logic for INDIVIDUAL mode buttons
                     const isStudentLimitReached = !selectedEvent.isTeamEvent && !isRegistered && indivCount >= 3;
@@ -282,7 +311,7 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
                                       {isStudentLimitReached && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 rounded border border-red-200">Max Events</span>}
                                       {isHouseLimitReached && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 rounded border border-orange-200">House Full</span>}
                                     </div>
-                                    <p className="text-sm text-gray-500 font-mono">{student.admissionNo} • Grade {student.grade} • {student.house}</p>
+                                    <p className="text-sm text-gray-500 font-mono">{student.admissionNo} • Grade {student.grade} • Age {age}</p>
                                 </div>
                             </div>
                             

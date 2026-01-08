@@ -160,10 +160,10 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
     });
   };
 
-  const calculateAge2026 = (dobString: string | undefined) => {
-    if (!dobString) return '-';
+  const calculateAge2026 = (dobString: string | undefined): number => {
+    if (!dobString) return 0;
     const birthYear = new Date(dobString).getFullYear();
-    if (isNaN(birthYear)) return '-';
+    if (isNaN(birthYear)) return 0;
     return 2026 - birthYear;
   };
 
@@ -192,11 +192,21 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
     // 2. Grade Filter
     const matchesGrade = selectedGradeFilter ? s.grade === selectedGradeFilter : true;
 
-    // 3. Age Filter
+    // 3. Age Filter (Updated with Categories)
     let matchesAge = true;
     if (selectedAgeFilter) {
         const age = calculateAge2026(s.dateOfBirth);
-        matchesAge = age.toString() === selectedAgeFilter;
+        
+        switch (selectedAgeFilter) {
+            case 'U12': matchesAge = [10, 11].includes(age); break;
+            case 'U14': matchesAge = [12, 13].includes(age); break;
+            case 'U16': matchesAge = [14, 15].includes(age); break;
+            case 'U18': matchesAge = [16, 17].includes(age); break;
+            case 'U20': matchesAge = [18, 19].includes(age); break;
+            case 'U15': matchesAge = [10, 11, 12, 13, 14].includes(age); break;
+            case 'O15': matchesAge = age >= 16; break;
+            default: matchesAge = age.toString() === selectedAgeFilter;
+        }
     }
 
     // 4. House Filter
@@ -230,7 +240,13 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
     }
     if (selectedHouseFilter) parts.push(`House: ${selectedHouseFilter}`);
     if (selectedGradeFilter) parts.push(`Grade ${selectedGradeFilter}`);
-    if (selectedAgeFilter) parts.push(`Age ${selectedAgeFilter}`);
+    if (selectedAgeFilter) {
+        const labels: Record<string, string> = {
+            'U12': 'Under 12', 'U14': 'Under 14', 'U16': 'Under 16', 
+            'U18': 'Under 18', 'U20': 'Under 20', 'U15': 'Under 15', 'O15': 'Over 15'
+        };
+        parts.push(`Age: ${labels[selectedAgeFilter] || selectedAgeFilter}`);
+    }
     
     if (parts.length > 0) return parts.join(' • ');
     
@@ -346,16 +362,27 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
             </div>
 
             {/* Age Filter */}
-            <div className="w-full md:w-32">
+            <div className="w-full md:w-40">
                <select
                  value={selectedAgeFilter}
                  onChange={(e) => setSelectedAgeFilter(e.target.value)}
                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
                >
                  <option value="">Age: All</option>
-                 {ages.map(a => (
-                   <option key={a} value={a}>{a}</option>
-                 ))}
+                 <optgroup label="Event Categories">
+                    <option value="U12">Under 12 (10-11)</option>
+                    <option value="U14">Under 14 (12-13)</option>
+                    <option value="U15">Under 15 (10-14)</option>
+                    <option value="O15">Over 15 (16+)</option>
+                    <option value="U16">Under 16 (14-15)</option>
+                    <option value="U18">Under 18 (16-17)</option>
+                    <option value="U20">Under 20 (18-19)</option>
+                 </optgroup>
+                 <optgroup label="Specific Age">
+                    {ages.map(a => (
+                        <option key={a} value={a}>{a}</option>
+                    ))}
+                 </optgroup>
                </select>
             </div>
             

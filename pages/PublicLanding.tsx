@@ -8,10 +8,62 @@ import {
   PieChart, Pie, Legend
 } from 'recharts';
 
+interface HouseStat { 
+  name: House; 
+  points: number; 
+  gold: number; 
+  silver: number; 
+  bronze: number; 
+  special: number; 
+  fill: string 
+}
+
+const Speedometer: React.FC<{ data: HouseStat, maxPoints: number }> = ({ data, maxPoints }) => {
+  const chartData = [
+    { name: 'Points', value: data.points, fill: data.fill },
+    { name: 'Remaining', value: Math.max(0, (maxPoints * 1.2) - data.points), fill: '#f3f4f6' }
+  ];
+
+  return (
+    <div className="flex flex-col items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <h3 className="text-lg font-bold text-gray-800 mb-1">{data.name}</h3>
+      <div className="h-32 w-full relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="70%"
+              startAngle={180}
+              endAngle={0}
+              innerRadius="70%"
+              outerRadius="100%"
+              dataKey="value"
+              stroke="none"
+            >
+              <Cell fill={data.fill} />
+              <Cell fill="#f3f4f6" />
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="absolute bottom-0 left-0 right-0 text-center mb-2">
+          <span className="text-3xl font-bold text-gray-900">{data.points}</span>
+          <span className="text-xs text-gray-500 block">POINTS</span>
+        </div>
+      </div>
+      <div className="mt-2 flex space-x-3 text-sm">
+         <div className="flex items-center" title="Gold"><div className="w-2 h-2 rounded-full bg-yellow-400 mr-1"></div>{data.gold}</div>
+         <div className="flex items-center" title="Silver"><div className="w-2 h-2 rounded-full bg-gray-400 mr-1"></div>{data.silver}</div>
+         <div className="flex items-center" title="Bronze"><div className="w-2 h-2 rounded-full bg-orange-400 mr-1"></div>{data.bronze}</div>
+      </div>
+    </div>
+  );
+};
+
 export const PublicLanding: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<{
-    houseStats: { name: House; points: number; gold: number; silver: number; bronze: number; special: number; fill: string }[];
+    houseStats: HouseStat[];
     recentResults: (Result & { eventName: string; winner: string; winnerHouse?: House })[];
     upcomingEvents: Event[];
     allScheduledEvents: Event[];
@@ -189,48 +241,6 @@ export const PublicLanding: React.FC = () => {
 
   const maxPoints = Math.max(...stats.houseStats.map(h => h.points), 100); // Dynamic max
 
-  const Speedometer = ({ data }: { data: typeof stats.houseStats[0] }) => {
-    const chartData = [
-      { name: 'Points', value: data.points, fill: data.fill },
-      { name: 'Remaining', value: (maxPoints * 1.2) - data.points, fill: '#f3f4f6' }
-    ];
-
-    return (
-      <div className="flex flex-col items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-bold text-gray-800 mb-1">{data.name}</h3>
-        <div className="h-32 w-full relative">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="70%"
-                startAngle={180}
-                endAngle={0}
-                innerRadius="70%"
-                outerRadius="100%"
-                dataKey="value"
-                stroke="none"
-              >
-                <Cell fill={data.fill} />
-                <Cell fill="#f3f4f6" />
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute bottom-0 left-0 right-0 text-center mb-2">
-            <span className="text-3xl font-bold text-gray-900">{data.points}</span>
-            <span className="text-xs text-gray-500 block">POINTS</span>
-          </div>
-        </div>
-        <div className="mt-2 flex space-x-3 text-sm">
-           <div className="flex items-center" title="Gold"><div className="w-2 h-2 rounded-full bg-yellow-400 mr-1"></div>{data.gold}</div>
-           <div className="flex items-center" title="Silver"><div className="w-2 h-2 rounded-full bg-gray-400 mr-1"></div>{data.silver}</div>
-           <div className="flex items-center" title="Bronze"><div className="w-2 h-2 rounded-full bg-orange-400 mr-1"></div>{data.bronze}</div>
-        </div>
-      </div>
-    );
-  };
-
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'TBD';
     return new Date(dateStr).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -335,7 +345,7 @@ export const PublicLanding: React.FC = () => {
         {/* Speedometers */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.houseStats.map(house => (
-            <Speedometer key={house.name} data={house} />
+            <Speedometer key={house.name} data={house} maxPoints={maxPoints} />
           ))}
         </section>
 

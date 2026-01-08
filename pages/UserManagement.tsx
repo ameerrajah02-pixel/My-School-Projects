@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, UserRole, House } from '../types';
 import { getUsers, saveUser, deleteUser, getCurrentUser } from '../services/storage';
 import { Plus, Trash2, Edit2, Shield, Search, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 export const UserManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,7 +21,13 @@ export const UserManagement: React.FC = () => {
 
   const loadUsers = () => {
     setUsers(getUsers());
-    setCurrentUser(getCurrentUser());
+    const current = getCurrentUser();
+    setCurrentUser(current);
+
+    // Strict Access Control: Only ADMIN allowed
+    if (current?.role !== UserRole.ADMIN) {
+      navigate('/dashboard');
+    }
   };
 
   useEffect(() => {
@@ -100,7 +108,7 @@ export const UserManagement: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
             <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-500">Create accounts for House Captains and Judges.</p>
+            <p className="text-gray-500">Create accounts for House Captains, Judges, and Editors.</p>
         </div>
         <button 
           onClick={() => openModal()}
@@ -137,6 +145,7 @@ export const UserManagement: React.FC = () => {
                     <span className={`px-2 py-1 rounded text-xs font-bold 
                         ${u.role === UserRole.ADMIN ? 'bg-purple-100 text-purple-700' : 
                           u.role === UserRole.CAPTAIN ? 'bg-blue-100 text-blue-700' : 
+                          u.role === UserRole.EDITOR ? 'bg-green-100 text-green-700' :
                           'bg-amber-100 text-amber-700'}`}>
                         {u.role}
                     </span>

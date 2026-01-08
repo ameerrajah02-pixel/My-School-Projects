@@ -116,7 +116,7 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
       const student = students.find(s => s.id === studentId);
       if (!student) return;
 
-      const newSet = new Set(pendingTeam);
+      const newSet = new Set<string>(pendingTeam);
       if (newSet.has(studentId)) {
           newSet.delete(studentId);
       } else {

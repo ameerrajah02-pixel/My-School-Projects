@@ -37,6 +37,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
       : 'text-gray-300 hover:bg-slate-700 hover:text-white'}
   `;
 
+  const isAdminOrEditor = user.role === UserRole.ADMIN || user.role === UserRole.EDITOR;
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden print:h-auto print:overflow-visible">
       {/* Sidebar - Hidden on print */}
@@ -59,8 +61,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
             <span>Dashboard</span>
           </button>
 
-          {/* Admin Routes */}
-          {user.role === UserRole.ADMIN && (
+          {/* Admin & Editor Routes */}
+          {isAdminOrEditor && (
             <>
               <button onClick={() => navigate('/events')} className={navItemClass('/events')}>
                 <Trophy size={20} />
@@ -78,10 +80,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
                 <Star size={20} />
                 <span>Special Points</span>
               </button>
-              <button onClick={() => navigate('/users')} className={navItemClass('/users')}>
-                <Settings size={20} />
-                <span>User Management</span>
-              </button>
+              
+              {/* User Management - Strictly Admin Only */}
+              {user.role === UserRole.ADMIN && (
+                <button onClick={() => navigate('/users')} className={navItemClass('/users')}>
+                  <Settings size={20} />
+                  <span>User Management</span>
+                </button>
+              )}
+
               <button onClick={() => navigate('/audit-logs')} className={navItemClass('/audit-logs')}>
                 <History size={20} />
                 <span>Activity Logs</span>
@@ -103,8 +110,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
             </>
           )}
 
-          {/* Judge Routes */}
-          {(user.role === UserRole.JUDGE || user.role === UserRole.ADMIN) && (
+          {/* Judge Routes (Editors also get access to judging) */}
+          {(user.role === UserRole.JUDGE || isAdminOrEditor) && (
             <button onClick={() => navigate('/judging')} className={navItemClass('/judging')}>
               <Gavel size={20} />
               <span>Judging & Results</span>

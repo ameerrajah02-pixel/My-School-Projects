@@ -117,6 +117,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     return null;
   };
 
+  const isAdminOrEditor = user.role === UserRole.ADMIN || user.role === UserRole.EDITOR;
+
   return (
     <div className="space-y-6">
       <header className="mb-8">
@@ -176,13 +178,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
           <h2 className="text-lg font-bold text-gray-800 mb-4">Quick Actions</h2>
           <div className="space-y-4 flex-1">
-             {user.role === UserRole.ADMIN && (
+             {isAdminOrEditor && (
                <p className="text-gray-600 text-sm">Go to <strong>Event Management</strong> to create new events or <strong>Special Points</strong> to award extras.</p>
              )}
              {user.role === UserRole.CAPTAIN && (
                <p className="text-gray-600 text-sm">Ensure all your students are registered before the deadline. Check the <strong>Registration</strong> tab.</p>
              )}
-             {user.role === UserRole.JUDGE && (
+             {(user.role === UserRole.JUDGE || isAdminOrEditor) && (
                <p className="text-gray-600 text-sm">Head to <strong>Judging</strong> to enter results for your assigned events.</p>
              )}
              <div className="p-4 bg-blue-50 rounded-lg text-blue-700 text-sm mt-auto">

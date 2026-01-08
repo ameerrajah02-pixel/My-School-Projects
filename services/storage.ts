@@ -29,7 +29,7 @@ const seedData = () => {
   // Check if users exist. If they do, check if they have passwords (migration fix). 
   // If not, re-seed.
   const currentUsers = getItems<User>(STORAGE_KEYS.USERS);
-  const needsUpdate = currentUsers.length === 0 || !currentUsers[0].password;
+  const needsUpdate = currentUsers.length === 0 || !currentUsers[0].password || !currentUsers.find(u => u.role === UserRole.EDITOR);
 
   if (needsUpdate) {
     const defaultUsers: User[] = [
@@ -38,6 +38,7 @@ const seedData = () => {
       { id: 'u3', username: 'bagdad_capt', password: '1234', role: UserRole.CAPTAIN, house: House.BAGDAD },
       { id: 'u4', username: 'cairo_capt', password: '1234', role: UserRole.CAPTAIN, house: House.CAIRO },
       { id: 'u5', username: 'judge', password: 'judge123', role: UserRole.JUDGE },
+      { id: 'u6', username: 'editor', password: 'editor123', role: UserRole.EDITOR },
     ];
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(defaultUsers));
   }
@@ -53,9 +54,42 @@ const seedData = () => {
 
   if (!localStorage.getItem(STORAGE_KEYS.STUDENTS)) {
     const defaultStudents: Student[] = [
-        { id: 's1', fullName: 'Ahmed Ali', admissionNo: '1001', grade: '12', dateOfBirth: '2008-05-15', gender: Gender.MALE, house: House.ANKARA },
-        { id: 's2', fullName: 'Fatima Sara', admissionNo: '1002', grade: '10', dateOfBirth: '2010-08-20', gender: Gender.FEMALE, house: House.BAGDAD },
-    ]
+        // Ankara (Purple)
+        { id: 's1', fullName: 'Kamal Perera', admissionNo: '7001', grade: '12', dateOfBirth: '2008-05-15', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's2', fullName: 'Nimali Silva', admissionNo: '7002', grade: '10', dateOfBirth: '2010-08-20', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's3', fullName: 'Mohamed Fazil', admissionNo: '7003', grade: '13', dateOfBirth: '2007-01-10', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's4', fullName: 'Sarah Jones', admissionNo: '7004', grade: '8', dateOfBirth: '2012-03-15', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's5', fullName: 'Ruwan Dissanaike', admissionNo: '7005', grade: '11', dateOfBirth: '2009-11-05', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's6', fullName: 'Kavindi Jayasuriya', admissionNo: '7006', grade: '9', dateOfBirth: '2011-06-22', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's7', fullName: 'Abdullah Riaz', admissionNo: '7007', grade: '7', dateOfBirth: '2013-09-12', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's8', fullName: 'Yusra Banu', admissionNo: '7008', grade: '12', dateOfBirth: '2008-02-14', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's9', fullName: 'Danushka Gunathilaka', admissionNo: '7009', grade: '6', dateOfBirth: '2014-05-30', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's10', fullName: 'Ayesha Takia', admissionNo: '7010', grade: '10', dateOfBirth: '2010-12-01', gender: Gender.FEMALE, house: House.ANKARA },
+
+        // Bagdad (Pink)
+        { id: 's11', fullName: 'Fawaz Ahmed', admissionNo: '8001', grade: '13', dateOfBirth: '2007-04-10', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's12', fullName: 'Shalini Peiris', admissionNo: '8002', grade: '9', dateOfBirth: '2011-09-15', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's13', fullName: 'Ravi Teja', admissionNo: '8003', grade: '11', dateOfBirth: '2009-02-28', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's14', fullName: 'Mariam George', admissionNo: '8004', grade: '7', dateOfBirth: '2013-11-20', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's15', fullName: 'Isuru Udana', admissionNo: '8005', grade: '12', dateOfBirth: '2008-07-07', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's16', fullName: 'Hana Ziyad', admissionNo: '8006', grade: '8', dateOfBirth: '2012-01-05', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's17', fullName: 'Kasun Rajitha', admissionNo: '8007', grade: '10', dateOfBirth: '2010-06-18', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's18', fullName: 'Zainab Rimzan', admissionNo: '8008', grade: '6', dateOfBirth: '2014-08-25', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's19', fullName: 'Omar Khayam', admissionNo: '8009', grade: '13', dateOfBirth: '2007-12-12', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's20', fullName: 'Sanduni Perera', admissionNo: '8010', grade: '11', dateOfBirth: '2009-03-30', gender: Gender.FEMALE, house: House.BAGDAD },
+
+        // Cairo (Maroon)
+        { id: 's21', fullName: 'Shehan Jayasuriya', admissionNo: '9001', grade: '12', dateOfBirth: '2008-01-01', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's22', fullName: 'Fathima Nuzha', admissionNo: '9002', grade: '8', dateOfBirth: '2012-05-10', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's23', fullName: 'Dinesh Chandimal', admissionNo: '9003', grade: '13', dateOfBirth: '2007-09-22', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's24', fullName: 'Amara Weerasinghe', admissionNo: '9004', grade: '10', dateOfBirth: '2010-02-15', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's25', fullName: 'Bilal Hassim', admissionNo: '9005', grade: '7', dateOfBirth: '2013-07-08', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's26', fullName: 'Safiya Nazeer', admissionNo: '9006', grade: '11', dateOfBirth: '2009-10-12', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's27', fullName: 'Nuwan Pradeep', admissionNo: '9007', grade: '9', dateOfBirth: '2011-04-18', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's28', fullName: 'Rishma Faleel', admissionNo: '9008', grade: '6', dateOfBirth: '2014-11-30', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's29', fullName: 'Tharindu Kaushal', admissionNo: '9009', grade: '12', dateOfBirth: '2008-08-05', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's30', fullName: 'Minha Muneer', admissionNo: '9010', grade: '13', dateOfBirth: '2007-03-25', gender: Gender.FEMALE, house: House.CAIRO },
+    ];
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(defaultStudents));
   }
 };

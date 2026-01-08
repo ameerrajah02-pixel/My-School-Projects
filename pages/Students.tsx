@@ -15,7 +15,13 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyRegistered, setShowOnlyRegistered] = useState(false);
-  const [selectedEventFilter, setSelectedEventFilter] = useState<string>(''); // New filter state
+  
+  // Filters
+  const [selectedEventFilter, setSelectedEventFilter] = useState<string>('');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('');
+  const [selectedAgeFilter, setSelectedAgeFilter] = useState<string>('');
+  const [selectedHouseFilter, setSelectedHouseFilter] = useState<string>('');
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
@@ -29,8 +35,12 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
     house: user.house || House.ANKARA
   });
 
+  const isAdminOrEditor = user.role === UserRole.ADMIN || user.role === UserRole.EDITOR;
+
   // Helpers for Dropdowns
   const grades = Array.from({length: 8}, (_, i) => (i + 6).toString()); // ['6', '7', ..., '13']
+  const ages = Array.from({length: 12}, (_, i) => (i + 10).toString()); // ['10', ..., '21']
+
   const days = Array.from({length: 31}, (_, i) => (i + 1).toString().padStart(2, '0')); // ['01', ..., '31']
   const months = [
     { val: '01', label: 'January' }, { val: '02', label: 'February' }, { val: '03', label: 'March' },
@@ -175,22 +185,37 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
   };
 
   const filteredStudents = students.filter(s => {
+    // 1. Search Term
     const matchesSearch = s.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           s.admissionNo.includes(searchTerm);
     
-    // Priority 1: Event Filter
+    // 2. Grade Filter
+    const matchesGrade = selectedGradeFilter ? s.grade === selectedGradeFilter : true;
+
+    // 3. Age Filter
+    let matchesAge = true;
+    if (selectedAgeFilter) {
+        const age = calculateAge2026(s.dateOfBirth);
+        matchesAge = age.toString() === selectedAgeFilter;
+    }
+
+    // 4. House Filter
+    const matchesHouse = selectedHouseFilter ? s.house === selectedHouseFilter : true;
+
+    // 5. Event Filter
+    let matchesEvent = true;
     if (selectedEventFilter) {
-      const isRegisteredForEvent = registrations.some(r => r.studentId === s.id && r.eventId === selectedEventFilter);
-      return matchesSearch && isRegisteredForEvent;
+      matchesEvent = registrations.some(r => r.studentId === s.id && r.eventId === selectedEventFilter);
     }
 
-    // Priority 2: General "Registered Only" Toggle
-    if (showOnlyRegistered) {
-      const hasRegs = registrations.some(r => r.studentId === s.id);
-      return matchesSearch && hasRegs;
+    // 6. Registered Toggle
+    // Only apply generic "registered" check if we aren't already checking a specific event
+    let matchesRegToggle = true;
+    if (showOnlyRegistered && !selectedEventFilter) {
+      matchesRegToggle = registrations.some(r => r.studentId === s.id);
     }
 
-    return matchesSearch;
+    return matchesSearch && matchesGrade && matchesAge && matchesHouse && matchesEvent && matchesRegToggle;
   });
 
   // Derived state for current date selections
@@ -198,10 +223,17 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
 
   // Helpers for Print Title
   const getPrintTitle = () => {
+    const parts = [];
     if (selectedEventFilter) {
       const evt = events.find(e => e.id === selectedEventFilter);
-      return evt ? `Event Registration List: ${evt.name} (${evt.ageGroup})` : 'Event List';
+      if (evt) parts.push(`Event: ${evt.name}`);
     }
+    if (selectedHouseFilter) parts.push(`House: ${selectedHouseFilter}`);
+    if (selectedGradeFilter) parts.push(`Grade ${selectedGradeFilter}`);
+    if (selectedAgeFilter) parts.push(`Age ${selectedAgeFilter}`);
+    
+    if (parts.length > 0) return parts.join(' • ');
+    
     if (user.role === UserRole.CAPTAIN) {
       return `House Registration List - ${user.house}`;
     }
@@ -226,7 +258,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
             <span>Print List</span>
           </button>
 
-          {user.role === UserRole.ADMIN && (
+          {isAdminOrEditor && (
             <button 
               onClick={() => openModal()}
               className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -254,8 +286,9 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-col md:flex-row gap-4 print:hidden">
-        <div className="relative flex-1">
+      <div className="flex flex-col space-y-4 print:hidden">
+        {/* Search Row */}
+        <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input 
             type="text" 
@@ -266,34 +299,82 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
           />
         </div>
 
-        {/* Event Filter Dropdown */}
-        <div className="w-full md:w-64">
-           <select
-             value={selectedEventFilter}
-             onChange={(e) => setSelectedEventFilter(e.target.value)}
-             className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
-           >
-             <option value="">Filter by Event (All)</option>
-             {events.map(e => (
-               <option key={e.id} value={e.id}>{e.name} ({e.ageGroup})</option>
-             ))}
-           </select>
+        {/* Filters Row */}
+        <div className="flex flex-col md:flex-row gap-4">
+             {/* Event Filter */}
+             <div className="flex-1 min-w-[200px]">
+               <select
+                 value={selectedEventFilter}
+                 onChange={(e) => setSelectedEventFilter(e.target.value)}
+                 className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+               >
+                 <option value="">All Events</option>
+                 {events.map(e => (
+                   <option key={e.id} value={e.id}>{e.name} ({e.ageGroup})</option>
+                 ))}
+               </select>
+            </div>
+
+            {/* House Filter - Only for Admins/Editors/Judges */}
+            {(user.role !== UserRole.CAPTAIN) && (
+            <div className="w-full md:w-32">
+               <select
+                 value={selectedHouseFilter}
+                 onChange={(e) => setSelectedHouseFilter(e.target.value)}
+                 className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+               >
+                 <option value="">House: All</option>
+                 {Object.values(House).map(h => (
+                   <option key={h} value={h}>{h}</option>
+                 ))}
+               </select>
+            </div>
+            )}
+
+            {/* Grade Filter */}
+            <div className="w-full md:w-32">
+               <select
+                 value={selectedGradeFilter}
+                 onChange={(e) => setSelectedGradeFilter(e.target.value)}
+                 className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+               >
+                 <option value="">Grade: All</option>
+                 {grades.map(g => (
+                   <option key={g} value={g}>{g}</option>
+                 ))}
+               </select>
+            </div>
+
+            {/* Age Filter */}
+            <div className="w-full md:w-32">
+               <select
+                 value={selectedAgeFilter}
+                 onChange={(e) => setSelectedAgeFilter(e.target.value)}
+                 className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+               >
+                 <option value="">Age: All</option>
+                 {ages.map(a => (
+                   <option key={a} value={a}>{a}</option>
+                 ))}
+               </select>
+            </div>
+            
+            {/* Toggle */}
+            <button 
+              onClick={() => setShowOnlyRegistered(!showOnlyRegistered)}
+              disabled={!!selectedEventFilter} 
+              className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg border transition-colors whitespace-nowrap
+                ${selectedEventFilter 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                    : showOnlyRegistered 
+                        ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                        : 'bg-white border-gray-200 text-gray-600'
+                }`}
+            >
+              <Filter size={18} />
+              <span>{showOnlyRegistered ? 'Registered' : 'All Students'}</span>
+            </button>
         </div>
-        
-        <button 
-          onClick={() => setShowOnlyRegistered(!showOnlyRegistered)}
-          disabled={!!selectedEventFilter} // Disable if event filter is active
-          className={`flex items-center space-x-2 px-4 py-3 rounded-lg border transition-colors 
-            ${selectedEventFilter 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : showOnlyRegistered 
-                    ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                    : 'bg-white border-gray-200 text-gray-600'
-            }`}
-        >
-          <Filter size={18} />
-          <span>{showOnlyRegistered ? 'Show All Students' : 'Registered Only'}</span>
-        </button>
       </div>
 
       {/* Table */}
@@ -307,7 +388,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">Age / Gender</th>
               <th className="px-6 py-4 print:px-2 print:py-2 print:border print:border-gray-400">House</th>
               <th className="px-6 py-4 print:px-2 print:py-2 w-1/3 print:border print:border-gray-400">Registered Events</th>
-              {user.role === UserRole.ADMIN && (
+              {isAdminOrEditor && (
                 <th className="px-6 py-4 text-right print:hidden">Actions</th>
               )}
             </tr>
@@ -343,7 +424,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
                       <span className="text-gray-400 italic text-xs print:text-gray-500">-</span>
                     )}
                   </td>
-                  {user.role === UserRole.ADMIN && (
+                  {isAdminOrEditor && (
                     <td className="px-6 py-4 text-right space-x-2 print:hidden">
                       <button onClick={() => openModal(student)} className="text-blue-600 hover:text-blue-800 p-1">
                         <Edit2 size={16} />
@@ -358,7 +439,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
             })}
             {filteredStudents.length === 0 && (
               <tr>
-                <td colSpan={user.role === UserRole.ADMIN ? 7 : 6} className="px-6 py-12 text-center text-gray-500 print:border print:border-gray-400">
+                <td colSpan={isAdminOrEditor ? 7 : 6} className="px-6 py-12 text-center text-gray-500 print:border print:border-gray-400">
                   No students found matching your criteria.
                 </td>
               </tr>

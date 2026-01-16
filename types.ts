@@ -67,9 +67,16 @@ export interface Registration {
 export interface Result {
   id: string;
   eventId: string;
-  firstPlaceStudentId?: string;
-  secondPlaceStudentId?: string;
+  // Arrays to support ties (up to 3)
+  firstPlaceStudentIds: string[]; 
+  secondPlaceStudentIds: string[];
+  thirdPlaceStudentIds: string[];
+  // Legacy fields for backward compatibility or single entries if needed
+  firstPlaceStudentId?: string; 
+  secondPlaceStudentId?: string; 
   thirdPlaceStudentId?: string;
+  
+  // Lower places usually don't have ties recorded in this system, keeping simple
   fourthPlaceStudentId?: string;
   fifthPlaceStudentId?: string;
   sixthPlaceStudentId?: string;

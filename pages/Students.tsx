@@ -204,7 +204,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
             case 'U18': matchesAge = [16, 17].includes(age); break;
             case 'U20': matchesAge = [18, 19].includes(age); break;
             case 'U15': matchesAge = [10, 11, 12, 13, 14].includes(age); break;
-            case 'O15': matchesAge = age >= 16; break;
+            case 'O15': matchesAge = age >= 15; break;
             default: matchesAge = age.toString() === selectedAgeFilter;
         }
     }
@@ -373,7 +373,7 @@ export const Students: React.FC<StudentsProps> = ({ user }) => {
                     <option value="U12">Under 12 (10-11)</option>
                     <option value="U14">Under 14 (12-13)</option>
                     <option value="U15">Under 15 (10-14)</option>
-                    <option value="O15">Over 15 (16+)</option>
+                    <option value="O15">Over 15 (15+)</option>
                     <option value="U16">Under 16 (14-15)</option>
                     <option value="U18">Under 18 (16-17)</option>
                     <option value="U20">Under 20 (18-19)</option>

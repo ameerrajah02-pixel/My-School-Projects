@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Event, Student, EventStatus, UserRole } from '../types';
 import { getEvents, getStudents, getRegistrations, saveResult, getCurrentUser } from '../services/storage';
-import { Medal, Save, FileBarChart } from 'lucide-react';
+import { Medal, Save, FileBarChart, Plus, Trash2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 export const Judging: React.FC = () => {
@@ -11,10 +11,12 @@ export const Judging: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState('');
   const [participants, setParticipants] = useState<Student[]>([]);
   
-  // Results State
-  const [firstPlace, setFirstPlace] = useState('');
-  const [secondPlace, setSecondPlace] = useState('');
-  const [thirdPlace, setThirdPlace] = useState('');
+  // Results State (Arrays for 1-3 to support ties)
+  const [firstPlaceIds, setFirstPlaceIds] = useState<string[]>(['']);
+  const [secondPlaceIds, setSecondPlaceIds] = useState<string[]>(['']);
+  const [thirdPlaceIds, setThirdPlaceIds] = useState<string[]>(['']);
+  
+  // Single values for 4-6
   const [fourthPlace, setFourthPlace] = useState('');
   const [fifthPlace, setFifthPlace] = useState('');
   const [sixthPlace, setSixthPlace] = useState('');
@@ -45,9 +47,9 @@ export const Judging: React.FC = () => {
       setParticipants(eventParticipants);
       
       // Reset form
-      setFirstPlace('');
-      setSecondPlace('');
-      setThirdPlace('');
+      setFirstPlaceIds(['']);
+      setSecondPlaceIds(['']);
+      setThirdPlaceIds(['']);
       setFourthPlace('');
       setFifthPlace('');
       setSixthPlace('');
@@ -57,26 +59,37 @@ export const Judging: React.FC = () => {
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
 
-  const handleSaveResult = () => {
-    if (!firstPlace) {
-      alert("Please select at least the First Place winner.");
-      return;
-    }
+  // Helper to get all currently selected IDs to filter dropdowns
+  const getAllSelectedIds = () => {
+    return [
+        ...firstPlaceIds,
+        ...secondPlaceIds,
+        ...thirdPlaceIds,
+        fourthPlace,
+        fifthPlace,
+        sixthPlace
+    ].filter(id => id !== '');
+  };
 
-    // Check if distinct students are selected (ignoring empty selections)
-    const winners = [firstPlace, secondPlace, thirdPlace, fourthPlace, fifthPlace, sixthPlace].filter(Boolean);
-    const uniqueWinners = new Set(winners);
-    if (winners.length !== uniqueWinners.size) {
-      alert("A student cannot win multiple places in the same event.");
+  const handleSaveResult = () => {
+    // Filter out empty strings
+    const cleanFirst = firstPlaceIds.filter(Boolean);
+    const cleanSecond = secondPlaceIds.filter(Boolean);
+    const cleanThird = thirdPlaceIds.filter(Boolean);
+
+    if (cleanFirst.length === 0) {
+      alert("Please select at least one First Place winner.");
       return;
     }
 
     const result = {
       id: uuidv4(),
       eventId: selectedEventId,
-      firstPlaceStudentId: firstPlace || undefined,
-      secondPlaceStudentId: secondPlace || undefined,
-      thirdPlaceStudentId: thirdPlace || undefined,
+      // Save arrays
+      firstPlaceStudentIds: cleanFirst,
+      secondPlaceStudentIds: cleanSecond,
+      thirdPlaceStudentIds: cleanThird,
+      // Save singles
       fourthPlaceStudentId: fourthPlace || undefined,
       fifthPlaceStudentId: fifthPlace || undefined,
       sixthPlaceStudentId: sixthPlace || undefined,
@@ -88,8 +101,7 @@ export const Judging: React.FC = () => {
     if (confirm("Results saved successfully! Event marked as Completed.\n\nWould you like to view the Reports now?")) {
       navigate('/reports');
     } else {
-      // Refresh events list to remove completed event and reset form
-      // Re-fetch to respect logic
+      // Refresh events list
       let pendingEvents = getEvents().filter(e => e.status !== EventStatus.COMPLETED);
       if (currentUser && currentUser.role === UserRole.JUDGE) {
           pendingEvents = pendingEvents.filter(e => e.judgeId === currentUser.id);
@@ -98,29 +110,107 @@ export const Judging: React.FC = () => {
       
       setSelectedEventId('');
       setParticipants([]);
-      setFirstPlace('');
-      setSecondPlace('');
-      setThirdPlace('');
-      setFourthPlace('');
-      setFifthPlace('');
-      setSixthPlace('');
-      setRemarks('');
     }
   };
 
-  const renderSelect = (value: string, onChange: (val: string) => void, label: string, colorClass: string) => (
-    <div className="space-y-2">
-      <label className={`block text-sm font-bold ${colorClass}`}>{label}</label>
+  // Generic handler for array updates
+  const updateIdInArray = (
+    setter: React.Dispatch<React.SetStateAction<string[]>>, 
+    index: number, 
+    newValue: string
+  ) => {
+    setter(prev => {
+        const copy = [...prev];
+        copy[index] = newValue;
+        return copy;
+    });
+  };
+
+  const addSlot = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+    setter(prev => {
+        if (prev.length >= 3) return prev;
+        return [...prev, ''];
+    });
+  };
+
+  const removeSlot = (setter: React.Dispatch<React.SetStateAction<string[]>>, index: number) => {
+      setter(prev => {
+          const copy = [...prev];
+          copy.splice(index, 1);
+          return copy.length ? copy : ['']; // Always keep at least one slot
+      });
+  };
+
+  // Reusable Component for a "Place" Row (supports ties)
+  const renderPlaceRow = (
+      title: string, 
+      ids: string[], 
+      setIds: React.Dispatch<React.SetStateAction<string[]>>, 
+      colorClass: string,
+      limit: number = 3
+  ) => {
+      return (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-4">
+              <div className="flex justify-between items-center mb-2">
+                  <label className={`block text-sm font-bold ${colorClass}`}>{title}</label>
+                  {ids.length < limit && (
+                      <button 
+                        onClick={() => addSlot(setIds)}
+                        className="text-xs flex items-center bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+                      >
+                          <Plus size={12} className="mr-1" /> Add Tie
+                      </button>
+                  )}
+              </div>
+              <div className="space-y-2">
+                  {ids.map((id, idx) => (
+                      <div key={idx} className="flex gap-2">
+                          <select 
+                            value={id} 
+                            onChange={(e) => updateIdInArray(setIds, idx, e.target.value)}
+                            className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+                          >
+                            <option value="">-- Select Winner --</option>
+                            {participants
+                                .filter(s => !getAllSelectedIds().includes(s.id) || s.id === id) // Filter out selected, allow current
+                                .map(s => (
+                                <option key={s.id} value={s.id}>
+                                    {s.admissionNo} - {s.fullName} ({s.house})
+                                </option>
+                            ))}
+                          </select>
+                          {ids.length > 1 && (
+                              <button 
+                                onClick={() => removeSlot(setIds, idx)}
+                                className="text-red-400 hover:text-red-600 p-2"
+                                title="Remove Tie"
+                              >
+                                  <Trash2 size={16} />
+                              </button>
+                          )}
+                      </div>
+                  ))}
+              </div>
+          </div>
+      );
+  };
+
+  // Simple Select for 4th-6th
+  const renderSimpleSelect = (value: string, onChange: (val: string) => void, label: string) => (
+    <div className="space-y-1">
+      <label className="block text-xs font-bold text-gray-500 uppercase">{label}</label>
       <select 
         value={value} 
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
       >
         <option value="">-- Select Winner --</option>
-        {participants.map(s => (
-          <option key={s.id} value={s.id}>
-            {s.admissionNo} - {s.fullName} ({s.house})
-          </option>
+        {participants
+            .filter(s => !getAllSelectedIds().includes(s.id) || s.id === value)
+            .map(s => (
+            <option key={s.id} value={s.id}>
+                {s.admissionNo} - {s.fullName} ({s.house})
+            </option>
         ))}
       </select>
     </div>
@@ -131,7 +221,7 @@ export const Judging: React.FC = () => {
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Judging & Results</h1>
-          <p className="text-gray-500">Record official results for your assigned events.</p>
+          <p className="text-gray-500">Record official results. Supports ties for top 3 places.</p>
         </div>
         <button 
           onClick={() => navigate('/reports')}
@@ -176,28 +266,35 @@ export const Judging: React.FC = () => {
               Enter Winners for {selectedEvent.name}
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-                {selectedEvent.isTeamEvent ? 'Team Event (Places 1-3)' : 'Individual Event (Places 1-6)'}
+                {selectedEvent.isTeamEvent ? 'Team Event' : 'Individual Event'}
             </p>
           </div>
           
-          <div className="p-8 space-y-6">
+          <div className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {renderSelect(firstPlace, setFirstPlace, '1st Place (Gold) *', 'text-yellow-600')}
-              {renderSelect(secondPlace, setSecondPlace, '2nd Place (Silver)', 'text-gray-500')}
-              {renderSelect(thirdPlace, setThirdPlace, '3rd Place (Bronze)', 'text-amber-700')}
+                <div>
+                     {renderPlaceRow('1st Place (Gold)', firstPlaceIds, setFirstPlaceIds, 'text-yellow-600')}
+                </div>
+                <div>
+                     {renderPlaceRow('2nd Place (Silver)', secondPlaceIds, setSecondPlaceIds, 'text-gray-500')}
+                </div>
+                <div>
+                     {renderPlaceRow('3rd Place (Bronze)', thirdPlaceIds, setThirdPlaceIds, 'text-amber-700')}
+                </div>
             </div>
 
             {!selectedEvent.isTeamEvent && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-dashed border-gray-200">
-                  {renderSelect(fourthPlace, setFourthPlace, '4th Place', 'text-gray-600')}
-                  {renderSelect(fifthPlace, setFifthPlace, '5th Place', 'text-gray-600')}
-                  {renderSelect(sixthPlace, setSixthPlace, '6th Place', 'text-gray-600')}
+                <div className="mt-6 pt-6 border-t border-dashed border-gray-200">
+                    <h3 className="text-sm font-bold text-gray-700 mb-4">Runners Up</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {renderSimpleSelect(fourthPlace, setFourthPlace, '4th Place')}
+                        {renderSimpleSelect(fifthPlace, setFifthPlace, '5th Place')}
+                        {renderSimpleSelect(sixthPlace, setSixthPlace, '6th Place')}
+                    </div>
                 </div>
             )}
             
-            <p className="text-xs text-gray-400 italic">* First place is mandatory.</p>
-
-            <div>
+            <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Judge's Remarks / Notes</label>
               <textarea 
                 rows={3}
@@ -208,7 +305,7 @@ export const Judging: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-gray-100">
+            <div className="flex justify-end pt-4 border-t border-gray-100 mt-6">
               <button 
                 onClick={handleSaveResult}
                 className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold shadow-sm transition-all transform hover:scale-105"

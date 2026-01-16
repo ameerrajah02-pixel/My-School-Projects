@@ -43,22 +43,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
       const getStudentHouse = (sid: string | undefined) => students.find(s => s.id === sid)?.house;
       
-      const firstHouse = getStudentHouse(r.firstPlaceStudentId);
-      const secondHouse = getStudentHouse(r.secondPlaceStudentId);
-      const thirdHouse = getStudentHouse(r.thirdPlaceStudentId);
+      // Backward Compatibility: Check array first, fallback to single ID
+      const winners1 = r.firstPlaceStudentIds || (r.firstPlaceStudentId ? [r.firstPlaceStudentId] : []);
+      const winners2 = r.secondPlaceStudentIds || (r.secondPlaceStudentId ? [r.secondPlaceStudentId] : []);
+      const winners3 = r.thirdPlaceStudentIds || (r.thirdPlaceStudentId ? [r.thirdPlaceStudentId] : []);
 
-      if (firstHouse) {
-        houseScores[firstHouse] += pts1;
-        houseMedalCounts[firstHouse] += 1;
-      }
-      if (secondHouse) {
-        houseScores[secondHouse] += pts2;
-        houseMedalCounts[secondHouse] += 1;
-      }
-      if (thirdHouse) {
-        houseScores[thirdHouse] += pts3;
-        houseMedalCounts[thirdHouse] += 1;
-      }
+      // Add points for all winners in 1st place (ties included)
+      winners1.forEach(id => {
+          const h = getStudentHouse(id);
+          if (h) {
+              houseScores[h] += pts1;
+              houseMedalCounts[h] += 1;
+          }
+      });
+
+      // Add points for all winners in 2nd place
+      winners2.forEach(id => {
+          const h = getStudentHouse(id);
+          if (h) {
+              houseScores[h] += pts2;
+              houseMedalCounts[h] += 1;
+          }
+      });
+
+      // Add points for all winners in 3rd place
+      winners3.forEach(id => {
+          const h = getStudentHouse(id);
+          if (h) {
+              houseScores[h] += pts3;
+              houseMedalCounts[h] += 1;
+          }
+      });
     });
 
     // 2. Add Special Points

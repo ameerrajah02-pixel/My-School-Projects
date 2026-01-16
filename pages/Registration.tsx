@@ -139,7 +139,8 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
     
     // Calculate differences relative to what is visible (to support Admin filtering if added later)
     // We only touch registrations for students currently in the list
-    const currentRegIds = new Set(registrations.filter(r => r.eventId === selectedEventId).map(r => r.studentId));
+    // Explicitly type Set<string> to ensure subsequent operations infer string[]
+    const currentRegIds = new Set<string>(registrations.filter(r => r.eventId === selectedEventId).map(r => r.studentId));
     
     const toAdd = [...pendingTeam].filter(id => !currentRegIds.has(id) && visibleStudentIds.has(id));
     const toRemove = [...currentRegIds].filter(id => !pendingTeam.has(id) && visibleStudentIds.has(id));
@@ -177,7 +178,7 @@ export const RegistrationPage: React.FC<RegistrationProps> = ({ user }) => {
           case 'Under 18': return [16, 17].includes(age);
           case 'Under 20': return [18, 19].includes(age);
           case 'Under 15': return [10, 11, 12, 13, 14].includes(age);
-          case 'Over 15': return age >= 16;
+          case 'Over 15': return age >= 15;
           case 'Open': return true;
           default: return true;
       }

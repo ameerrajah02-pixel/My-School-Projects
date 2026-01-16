@@ -19,18 +19,25 @@ export const Reports: React.FC = () => {
     // 1. Process Results List
     const processedResults = results.map(r => {
       const event = events.find(e => e.id === r.eventId);
-      const getStudentStr = (sid?: string) => {
-          const s = students.find(st => st.id === sid);
-          return s ? `${s.fullName} (${s.house})` : 'N/A';
+      
+      const getStudentStr = (ids: string[] | string | undefined) => {
+          if (!ids) return 'N/A';
+          const arr = Array.isArray(ids) ? ids : [ids];
+          if (arr.length === 0) return 'N/A';
+
+          return arr.map(id => {
+              const s = students.find(st => st.id === id);
+              return s ? `${s.fullName} (${s.house})` : 'Unknown';
+          }).join(', ');
       };
 
       return {
         ...r,
         eventName: event ? `${event.name} (${event.ageGroup}) [${event.isTeamEvent ? 'Team' : 'Indiv'}]` : 'Unknown Event',
         winnerNames: [
-          getStudentStr(r.firstPlaceStudentId),
-          getStudentStr(r.secondPlaceStudentId),
-          getStudentStr(r.thirdPlaceStudentId),
+          getStudentStr(r.firstPlaceStudentIds || r.firstPlaceStudentId),
+          getStudentStr(r.secondPlaceStudentIds || r.secondPlaceStudentId),
+          getStudentStr(r.thirdPlaceStudentIds || r.thirdPlaceStudentId),
           r.fourthPlaceStudentId ? getStudentStr(r.fourthPlaceStudentId) : '',
           r.fifthPlaceStudentId ? getStudentStr(r.fifthPlaceStudentId) : '',
           r.sixthPlaceStudentId ? getStudentStr(r.sixthPlaceStudentId) : '',
@@ -56,13 +63,24 @@ export const Reports: React.FC = () => {
         const pts3 = isTeam ? 3 : 1;
 
         const getHouse = (sid?: string) => students.find(s => s.id === sid)?.house;
-        const h1 = getHouse(r.firstPlaceStudentId);
-        const h2 = getHouse(r.secondPlaceStudentId);
-        const h3 = getHouse(r.thirdPlaceStudentId);
+        
+        // Handle Tie Arrays
+        const w1 = r.firstPlaceStudentIds || (r.firstPlaceStudentId ? [r.firstPlaceStudentId] : []);
+        const w2 = r.secondPlaceStudentIds || (r.secondPlaceStudentId ? [r.secondPlaceStudentId] : []);
+        const w3 = r.thirdPlaceStudentIds || (r.thirdPlaceStudentId ? [r.thirdPlaceStudentId] : []);
 
-        if (h1 && tally[h1]) { tally[h1].gold++; tally[h1].points += pts1; }
-        if (h2 && tally[h2]) { tally[h2].silver++; tally[h2].points += pts2; }
-        if (h3 && tally[h3]) { tally[h3].bronze++; tally[h3].points += pts3; }
+        w1.forEach(id => {
+            const h = getHouse(id);
+            if (h && tally[h]) { tally[h].gold++; tally[h].points += pts1; }
+        });
+        w2.forEach(id => {
+            const h = getHouse(id);
+            if (h && tally[h]) { tally[h].silver++; tally[h].points += pts2; }
+        });
+        w3.forEach(id => {
+            const h = getHouse(id);
+            if (h && tally[h]) { tally[h].bronze++; tally[h].points += pts3; }
+        });
     });
 
     // Calculate Special Points

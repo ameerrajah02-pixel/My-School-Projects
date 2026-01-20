@@ -1,3 +1,4 @@
+
 export enum UserRole {
   ADMIN = 'ADMIN',
   EDITOR = 'EDITOR',
@@ -101,6 +102,19 @@ export interface RegistrationLog {
   eventName: string;
   action: 'REGISTERED' | 'REMOVED';
   house: House;
+}
+
+export interface GalleryImage {
+  id: string;
+  url: string;
+  caption?: string;
+  timestamp: string;
+}
+
+export interface HeroImage {
+  id: string;
+  url: string;
+  timestamp: string;
 }
 
 export interface AuthState {

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, UserRole } from '../types';
@@ -13,7 +14,8 @@ import {
   Settings,
   Star,
   History,
-  CalendarClock
+  CalendarClock,
+  Image
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -79,6 +81,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
               <button onClick={() => navigate('/special-points')} className={navItemClass('/special-points')}>
                 <Star size={20} />
                 <span>Special Points</span>
+              </button>
+              <button onClick={() => navigate('/gallery-manage')} className={navItemClass('/gallery-manage')}>
+                <Image size={20} />
+                <span>Gallery Manager</span>
               </button>
               
               {/* User Management - Strictly Admin Only */}

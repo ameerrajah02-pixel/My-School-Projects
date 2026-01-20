@@ -1,11 +1,12 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { House, Event, Result, Student, EventStatus, EventCategory, Gender } from '../types';
-import { getEvents, getResults, getStudents, getSpecialPoints } from '../services/storage';
+import { House, Event, Result, Student, EventStatus, EventCategory, Gender, GalleryImage } from '../types';
+import { getEvents, getResults, getStudents, getSpecialPoints, getGalleryImages, getHeroImages } from '../services/storage';
 import { 
   Trophy, Calendar, Clock, LogIn, Medal, Award, Activity, List, 
   LayoutDashboard, Star, CheckCircle, Timer, Filter, Users, Search,
-  MapPin, Phone, Mail, Facebook
+  MapPin, Phone, Mail, Facebook, Image
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
@@ -165,7 +166,7 @@ const ResultCard: React.FC<{ result: any }> = ({ result }) => (
 
 export const PublicLanding: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'results' | 'champions' | 'events' | 'schedule' | 'members'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'results' | 'champions' | 'events' | 'schedule' | 'members' | 'gallery'>('dashboard');
   
   // Event Filters State
   const [filterCategory, setFilterCategory] = useState<string>('All');
@@ -191,6 +192,9 @@ export const PublicLanding: React.FC = () => {
         majorGames: { eventName: string; house: House }[];
     };
     maxHousePoints: number;
+    gallery: GalleryImage[];
+    randomGallery: GalleryImage[];
+    heroImages: string[];
   }>({
     houseStats: [],
     results: [],
@@ -199,25 +203,24 @@ export const PublicLanding: React.FC = () => {
     students: [],
     progress: { total: 0, completed: 0, percentage: 0 },
     champions: { individual: [], majorGames: [] },
-    maxHousePoints: 100 // Default to avoid div by zero
+    maxHousePoints: 100, // Default to avoid div by zero
+    gallery: [],
+    randomGallery: [],
+    heroImages: []
   });
 
   // Hero Carousel State
   const [currentSlide, setCurrentSlide] = useState(0);
-  const heroImages = [
-    "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1531685250784-756f9f674884?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&q=80&w=2070"
-  ];
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+      // Only cycle if we have images
+      if (stats.heroImages.length > 0) {
+          setCurrentSlide((prev) => (prev + 1) % stats.heroImages.length);
+      }
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [stats.heroImages.length]);
 
   useEffect(() => {
     // --- Data Processing ---
@@ -225,6 +228,12 @@ export const PublicLanding: React.FC = () => {
     const events = getEvents();
     const results = getResults();
     const specialPoints = getSpecialPoints();
+    const gallery = getGalleryImages();
+    const heroes = getHeroImages().map(h => h.url);
+
+    // Random 4 for Dashboard
+    const shuffled = [...gallery].sort(() => 0.5 - Math.random());
+    const randomGallery = shuffled.slice(0, 4);
 
     // 1. House Stats & Ranking
     const houseData = {
@@ -366,7 +375,10 @@ export const PublicLanding: React.FC = () => {
         students: students,
         progress: { total, completed, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 },
         champions: { individual: individualChampions, majorGames: majorGameWinners },
-        maxHousePoints: maxPts
+        maxHousePoints: maxPts,
+        gallery,
+        randomGallery,
+        heroImages: heroes
     });
   }, []);
 
@@ -519,6 +531,39 @@ export const PublicLanding: React.FC = () => {
             </section>
         </div>
 
+        {/* Gallery Preview (Random 4) */}
+        <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-pink-50 to-white border-b border-pink-100 flex justify-between items-center">
+                 <h2 className="font-bold text-gray-800 flex items-center">
+                    <div className="bg-white p-1.5 rounded-lg shadow-sm mr-2 text-pink-600">
+                        <Image size={18} />
+                    </div>
+                    Captured Moments
+                </h2>
+                <button onClick={() => setActiveTab('gallery')} className="text-xs text-blue-600 hover:underline">View Gallery</button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+                {stats.randomGallery.map(img => (
+                    <div key={img.id} className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 hover:shadow-lg transition-all">
+                        <img 
+                            src={img.url} 
+                            alt={img.caption || 'Gallery Image'} 
+                            className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                            loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-3">
+                            <p className="text-white text-xs font-medium truncate">{img.caption}</p>
+                        </div>
+                    </div>
+                ))}
+                {stats.randomGallery.length === 0 && (
+                     <div className="col-span-full text-center py-6 text-gray-400 text-sm">
+                         No images available.
+                     </div>
+                )}
+            </div>
+        </section>
+
         {/* Upcoming */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-4 bg-gradient-to-r from-blue-50 to-white border-b border-blue-100">
@@ -554,6 +599,43 @@ export const PublicLanding: React.FC = () => {
                 {stats.upcomingEvents.length === 0 && <div className="p-6 text-center text-gray-400 text-sm">No upcoming scheduled events.</div>}
             </div>
         </section>
+    </div>
+  );
+
+  const renderGallery = () => (
+    <div className="space-y-6 animate-fade-up">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Image className="mr-3 text-pink-500" /> Event Gallery
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+             {stats.gallery.map(img => (
+                <div key={img.id} className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
+                    <div className="aspect-square w-full bg-gray-100 overflow-hidden relative">
+                         <img 
+                             src={img.url} 
+                             alt={img.caption || 'Event Photo'} 
+                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                             loading="lazy"
+                         />
+                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    {img.caption && (
+                        <div className="p-3">
+                            <p className="text-sm font-medium text-gray-700">{img.caption}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                                {new Date(img.timestamp).toLocaleDateString()}
+                            </p>
+                        </div>
+                    )}
+                </div>
+             ))}
+             {stats.gallery.length === 0 && (
+                 <div className="col-span-full py-20 text-center bg-white rounded-xl border-2 border-dashed border-gray-100">
+                     <Image size={48} className="mx-auto text-gray-200 mb-4"/>
+                     <p className="text-gray-500">No photos uploaded yet.</p>
+                 </div>
+             )}
+        </div>
     </div>
   );
 
@@ -737,156 +819,6 @@ export const PublicLanding: React.FC = () => {
     );
   };
 
-  const renderHouseMembers = () => {
-    const grades = Array.from({length: 8}, (_, i) => (i + 6).toString()); 
-    const ages = Array.from({length: 12}, (_, i) => (i + 10).toString());
-
-    const filteredStudents = stats.students.filter(s => {
-        // 1. Search
-        const searchLower = memSearch.toLowerCase();
-        const matchSearch = s.fullName.toLowerCase().includes(searchLower) || s.admissionNo.includes(searchLower);
-
-        // 2. House
-        const matchHouse = memHouse === 'All' || s.house === memHouse;
-
-        // 3. Grade
-        const matchGrade = memGrade === 'All' || s.grade === memGrade;
-
-        // 4. Gender
-        const matchGender = memGender === 'All' || s.gender === memGender;
-
-        // 5. Age
-        let matchAge = true;
-        if (memAge !== 'All') {
-            const age = calculateAge(s.dateOfBirth);
-            switch (memAge) {
-                case 'U12': matchAge = [10, 11].includes(age); break;
-                case 'U14': matchAge = [12, 13].includes(age); break;
-                case 'U16': matchAge = [14, 15].includes(age); break;
-                case 'U18': matchAge = [16, 17].includes(age); break;
-                case 'U20': matchAge = [18, 19].includes(age); break;
-                case 'U15': matchAge = [10, 11, 12, 13, 14].includes(age); break;
-                case 'O15': matchAge = age >= 15; break;
-                default: matchAge = age.toString() === memAge;
-            }
-        }
-
-        return matchSearch && matchHouse && matchGrade && matchGender && matchAge;
-    });
-
-    return (
-        <div className="space-y-6 animate-fade-up">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <Users className="mr-3 text-blue-600" /> House Members
-            </h2>
-
-            {/* Filter Bar */}
-            <div className="flex flex-col gap-4">
-                 {/* Search Row */}
-                 <div className="relative w-full">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                    <input 
-                        type="text" 
-                        placeholder="Search by name or admission number..." 
-                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                        value={memSearch}
-                        onChange={(e) => setMemSearch(e.target.value)}
-                    />
-                </div>
-
-                {/* Filters Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <select
-                         value={memHouse}
-                         onChange={(e) => setMemHouse(e.target.value)}
-                         className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                    >
-                        <option value="All">House: All</option>
-                        {Object.values(House).map(h => <option key={h} value={h}>{h}</option>)}
-                    </select>
-
-                    <select
-                         value={memGrade}
-                         onChange={(e) => setMemGrade(e.target.value)}
-                         className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                    >
-                        <option value="All">Grade: All</option>
-                        {grades.map(g => <option key={g} value={g}>{g}</option>)}
-                    </select>
-
-                    <select
-                         value={memAge}
-                         onChange={(e) => setMemAge(e.target.value)}
-                         className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                    >
-                        <option value="All">Age: All</option>
-                        <optgroup label="Categories">
-                            <option value="U12">Under 12 (10-11)</option>
-                            <option value="U14">Under 14 (12-13)</option>
-                            <option value="U15">Under 15 (10-14)</option>
-                            <option value="O15">Over 15 (15+)</option>
-                            <option value="U16">Under 16 (14-15)</option>
-                            <option value="U18">Under 18 (16-17)</option>
-                            <option value="U20">Under 20 (18-19)</option>
-                        </optgroup>
-                        <optgroup label="Specific Age">
-                            {ages.map(a => <option key={a} value={a}>{a}</option>)}
-                        </optgroup>
-                    </select>
-
-                    <select
-                         value={memGender}
-                         onChange={(e) => setMemGender(e.target.value)}
-                         className="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                    >
-                        <option value="All">Gender: All</option>
-                        <option value={Gender.MALE}>Male</option>
-                        <option value={Gender.FEMALE}>Female</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase tracking-wider">
-                        <tr>
-                            <th className="px-6 py-4">Admsn No</th>
-                            <th className="px-6 py-4">Name with Initials</th>
-                            <th className="px-6 py-4">Grade</th>
-                            <th className="px-6 py-4">Age / Gender</th>
-                            <th className="px-6 py-4">House</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {filteredStudents.map(student => {
-                            const age = calculateAge(student.dateOfBirth);
-                            return (
-                                <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 font-mono text-sm text-gray-600">{student.admissionNo}</td>
-                                    <td className="px-6 py-4 font-medium text-gray-900">{student.fullName}</td>
-                                    <td className="px-6 py-4 text-gray-600">{student.grade}</td>
-                                    <td className="px-6 py-4 text-gray-600">{age} / {student.gender[0]}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium
-                                          ${student.house === House.ANKARA ? 'bg-purple-100 text-purple-700' : 
-                                            student.house === House.BAGDAD ? 'bg-pink-100 text-pink-700' : 
-                                            'bg-red-100 text-red-900'}`}>
-                                          {student.house}
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        {filteredStudents.length === 0 && (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400">No students found matching filters.</td></tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-  };
-
   const renderSchedule = () => {
     const sortedEvents = [...stats.allEvents]
         .filter(e => e.schedule)
@@ -948,6 +880,119 @@ export const PublicLanding: React.FC = () => {
     );
   };
 
+  const renderHouseMembers = () => {
+    // Unique values for filters
+    const grades = ['All', ...Array.from(new Set(stats.students.map(s => s.grade))).sort((a,b) => parseInt(a)-parseInt(b))];
+    const houses = ['All', ...Object.values(House)];
+    
+    const filteredMembers = stats.students.filter(s => {
+        const age = calculateAge(s.dateOfBirth);
+        
+        const matchSearch = s.fullName.toLowerCase().includes(memSearch.toLowerCase()) || s.admissionNo.includes(memSearch);
+        const matchHouse = memHouse === 'All' || s.house === memHouse;
+        const matchGrade = memGrade === 'All' || s.grade === memGrade;
+        const matchGender = memGender === 'All' || s.gender === memGender;
+        
+        let matchAge = true;
+        if (memAge !== 'All') {
+             matchAge = age.toString() === memAge;
+        }
+
+        return matchSearch && matchHouse && matchGrade && matchGender && matchAge;
+    });
+
+    return (
+        <div className="space-y-6 animate-fade-up">
+            <div className="flex flex-col gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <Users className="mr-3 text-purple-600" /> House Members Directory
+                </h2>
+                
+                {/* Search & Filters */}
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                     {/* Search */}
+                     <div className="relative md:col-span-2 lg:col-span-1">
+                        <input 
+                            type="text" 
+                            placeholder="Search name or no..." 
+                            className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={memSearch}
+                            onChange={(e) => setMemSearch(e.target.value)}
+                        />
+                        <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                     </div>
+
+                     {/* House Filter */}
+                     <select value={memHouse} onChange={(e) => setMemHouse(e.target.value)} className="px-3 py-2 border rounded-lg text-sm outline-none bg-white">
+                         {houses.map(h => <option key={h} value={h}>{h === 'All' ? 'House: All' : h}</option>)}
+                     </select>
+
+                     {/* Grade Filter */}
+                     <select value={memGrade} onChange={(e) => setMemGrade(e.target.value)} className="px-3 py-2 border rounded-lg text-sm outline-none bg-white">
+                         <option value="All">Grade: All</option>
+                         {grades.map(g => g !== 'All' && <option key={g} value={g}>{g}</option>)}
+                     </select>
+
+                     {/* Gender Filter */}
+                     <select value={memGender} onChange={(e) => setMemGender(e.target.value)} className="px-3 py-2 border rounded-lg text-sm outline-none bg-white">
+                         <option value="All">Gender: All</option>
+                         <option value={Gender.MALE}>Male</option>
+                         <option value={Gender.FEMALE}>Female</option>
+                     </select>
+
+                      {/* Age Filter */}
+                      <select value={memAge} onChange={(e) => setMemAge(e.target.value)} className="px-3 py-2 border rounded-lg text-sm outline-none bg-white">
+                         <option value="All">Age: All</option>
+                         {[10,11,12,13,14,15,16,17,18,19,20].map(a => <option key={a} value={a}>{a}</option>)}
+                     </select>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase tracking-wider">
+                            <tr>
+                                <th className="px-6 py-4">Adm No</th>
+                                <th className="px-6 py-4">Full Name</th>
+                                <th className="px-6 py-4">House</th>
+                                <th className="px-6 py-4">Grade</th>
+                                <th className="px-6 py-4">Gender</th>
+                                <th className="px-6 py-4">Age (2026)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredMembers.map(s => (
+                                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4 font-mono text-sm text-gray-500">{s.admissionNo}</td>
+                                    <td className="px-6 py-4 font-medium text-gray-900">{s.fullName}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
+                                            s.house === House.ANKARA ? 'bg-purple-100 text-purple-700' :
+                                            s.house === House.BAGDAD ? 'bg-pink-100 text-pink-700' : 'bg-red-100 text-red-700'
+                                        }`}>
+                                            {s.house}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-600">{s.grade}</td>
+                                    <td className="px-6 py-4 text-gray-600 capitalize">{s.gender.toLowerCase()}</td>
+                                    <td className="px-6 py-4 text-gray-600">{calculateAge(s.dateOfBirth)}</td>
+                                </tr>
+                            ))}
+                             {filteredMembers.length === 0 && (
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400">No students found matching criteria.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="p-4 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 text-center">
+                    Displaying {filteredMembers.length} students
+                </div>
+            </div>
+        </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* CSS Animations */}
@@ -972,7 +1017,7 @@ export const PublicLanding: React.FC = () => {
             
             {/* Desktop Navigation */}
             <div className="flex items-center space-x-1 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
-               {['dashboard', 'results', 'champions', 'events', 'members', 'schedule'].map((tab) => (
+               {['dashboard', 'results', 'champions', 'events', 'members', 'schedule', 'gallery'].map((tab) => (
                    <button
                         key={tab}
                         onClick={() => setActiveTab(tab as any)}
@@ -999,7 +1044,7 @@ export const PublicLanding: React.FC = () => {
       {/* Hero Section - ONLY on Dashboard */}
       {activeTab === 'dashboard' && (
         <div className="relative h-[350px] md:h-[450px] w-full overflow-hidden bg-slate-900 shadow-lg">
-            {heroImages.map((img, index) => (
+            {stats.heroImages.map((img, index) => (
             <div 
                 key={index}
                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-75' : 'opacity-0'}`}
@@ -1028,6 +1073,7 @@ export const PublicLanding: React.FC = () => {
         {activeTab === 'events' && renderEvents()}
         {activeTab === 'members' && renderHouseMembers()}
         {activeTab === 'schedule' && renderSchedule()}
+        {activeTab === 'gallery' && renderGallery()}
       </main>
 
       <footer className="bg-slate-900 text-slate-400 text-sm py-12 mt-12 border-t border-slate-800">

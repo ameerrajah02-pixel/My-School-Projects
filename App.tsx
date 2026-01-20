@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Login } from './pages/Login';
@@ -11,6 +12,7 @@ import { Reports } from './pages/Reports';
 import { UserManagement } from './pages/UserManagement';
 import { SpecialPoints } from './pages/SpecialPoints';
 import { AuditLogs } from './pages/AuditLogs';
+import { GalleryManagement } from './pages/GalleryManagement';
 import { PublicLanding } from './pages/PublicLanding';
 import { Layout } from './components/Layout';
 import { getCurrentUser } from './services/storage';
@@ -91,6 +93,12 @@ const App: React.FC = () => {
         <Route path="/special-points" element={
           <ProtectedRoute>
             {() => <SpecialPoints />}
+          </ProtectedRoute>
+        } />
+
+        <Route path="/gallery-manage" element={
+          <ProtectedRoute>
+            {() => <GalleryManagement />}
           </ProtectedRoute>
         } />
 

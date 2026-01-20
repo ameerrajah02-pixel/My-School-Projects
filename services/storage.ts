@@ -1,4 +1,5 @@
-import { User, Student, Event, Registration, Result, UserRole, House, EventCategory, EventStatus, Gender, SpecialPoint, RegistrationLog } from '../types';
+
+import { User, Student, Event, Registration, Result, UserRole, House, EventCategory, EventStatus, Gender, SpecialPoint, RegistrationLog, GalleryImage, HeroImage } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEYS = {
@@ -9,6 +10,8 @@ const STORAGE_KEYS = {
   RESULTS: 'sms_results',
   SPECIAL_POINTS: 'sms_special_points',
   LOGS: 'sms_registration_logs',
+  GALLERY: 'sms_gallery',
+  HERO_IMAGES: 'sms_hero_images',
   CURRENT_USER: 'sms_current_user'
 };
 
@@ -91,6 +94,39 @@ const seedData = () => {
         { id: 's30', fullName: 'M. Muneer', admissionNo: '9010', grade: '13', dateOfBirth: '2007-03-25', gender: Gender.FEMALE, house: House.CAIRO },
     ];
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(defaultStudents));
+  }
+
+  if (!localStorage.getItem(STORAGE_KEYS.GALLERY)) {
+    const defaultGallery: GalleryImage[] = [
+      { id: 'g1', url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=80&w=600', caption: 'Sprint Start', timestamp: new Date().toISOString() },
+      { id: 'g2', url: 'https://images.unsplash.com/photo-1531685250784-756f9f674884?auto=format&fit=crop&q=80&w=600', caption: 'Victory Celebration', timestamp: new Date().toISOString() },
+      { id: 'g3', url: 'https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&q=80&w=600', caption: 'Focus', timestamp: new Date().toISOString() },
+      { id: 'g4', url: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=600', caption: 'Track and Field', timestamp: new Date().toISOString() },
+      { id: 'g5', url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&q=80&w=600', caption: 'Team Spirit', timestamp: new Date().toISOString() },
+      { id: 'g6', url: 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=600', caption: 'Hurdles', timestamp: new Date().toISOString() },
+      { id: 'g7', url: 'https://images.unsplash.com/photo-1587280501635-68a6e82cd5ff?auto=format&fit=crop&q=80&w=600', caption: 'Volleyball Match', timestamp: new Date().toISOString() },
+      { id: 'g8', url: 'https://images.unsplash.com/photo-1434648957308-5e6a859697e8?auto=format&fit=crop&q=80&w=600', caption: 'High Jump', timestamp: new Date().toISOString() },
+      { id: 'g9', url: 'https://images.unsplash.com/photo-1565992441121-4367c2967103?auto=format&fit=crop&q=80&w=600', caption: 'Marathon', timestamp: new Date().toISOString() },
+      { id: 'g10', url: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&q=80&w=600', caption: 'Relay Pass', timestamp: new Date().toISOString() },
+      { id: 'g11', url: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&q=80&w=600', caption: 'Start Line', timestamp: new Date().toISOString() },
+      { id: 'g12', url: 'https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?auto=format&fit=crop&q=80&w=600', caption: 'Discuss Throw', timestamp: new Date().toISOString() },
+      { id: 'g13', url: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&q=80&w=600', caption: 'Javelin', timestamp: new Date().toISOString() },
+      { id: 'g14', url: 'https://images.unsplash.com/photo-1595183866299-4d6cbdb88753?auto=format&fit=crop&q=80&w=600', caption: 'Trophy Award', timestamp: new Date().toISOString() },
+      { id: 'g15', url: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=600', caption: 'Race Finish', timestamp: new Date().toISOString() },
+      { id: 'g16', url: 'https://images.unsplash.com/photo-1600965962102-9d260a71890d?auto=format&fit=crop&q=80&w=600', caption: 'Coach Talk', timestamp: new Date().toISOString() },
+    ];
+    localStorage.setItem(STORAGE_KEYS.GALLERY, JSON.stringify(defaultGallery));
+  }
+
+  if (!localStorage.getItem(STORAGE_KEYS.HERO_IMAGES)) {
+    const defaultHero: HeroImage[] = [
+      { id: 'h1', url: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=80&w=2070", timestamp: new Date().toISOString() },
+      { id: 'h2', url: "https://images.unsplash.com/photo-1531685250784-756f9f674884?auto=format&fit=crop&q=80&w=2070", timestamp: new Date().toISOString() },
+      { id: 'h3', url: "https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&q=80&w=2070", timestamp: new Date().toISOString() },
+      { id: 'h4', url: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=2070", timestamp: new Date().toISOString() },
+      { id: 'h5', url: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&q=80&w=2070", timestamp: new Date().toISOString() }
+    ];
+    localStorage.setItem(STORAGE_KEYS.HERO_IMAGES, JSON.stringify(defaultHero));
   }
 };
 
@@ -277,4 +313,34 @@ export const saveSpecialPoint = (point: SpecialPoint): void => {
 export const deleteSpecialPoint = (id: string): void => {
   const points = getSpecialPoints().filter(p => p.id !== id);
   setItems(STORAGE_KEYS.SPECIAL_POINTS, points);
+};
+
+// --- Gallery Service ---
+
+export const getGalleryImages = (): GalleryImage[] => getItems<GalleryImage>(STORAGE_KEYS.GALLERY);
+
+export const saveGalleryImage = (image: GalleryImage): void => {
+  const images = getGalleryImages();
+  images.unshift(image); // Add to top
+  setItems(STORAGE_KEYS.GALLERY, images);
+};
+
+export const deleteGalleryImage = (id: string): void => {
+  const images = getGalleryImages().filter(img => img.id !== id);
+  setItems(STORAGE_KEYS.GALLERY, images);
+};
+
+// --- Hero Image Service ---
+
+export const getHeroImages = (): HeroImage[] => getItems<HeroImage>(STORAGE_KEYS.HERO_IMAGES);
+
+export const saveHeroImage = (image: HeroImage): void => {
+  const images = getHeroImages();
+  images.unshift(image); // Add to top
+  setItems(STORAGE_KEYS.HERO_IMAGES, images);
+};
+
+export const deleteHeroImage = (id: string): void => {
+  const images = getHeroImages().filter(img => img.id !== id);
+  setItems(STORAGE_KEYS.HERO_IMAGES, images);
 };

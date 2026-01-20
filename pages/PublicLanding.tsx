@@ -6,7 +6,7 @@ import { getEvents, getResults, getStudents, getSpecialPoints, getGalleryImages,
 import { 
   Trophy, Calendar, Clock, LogIn, Medal, Award, Activity, List, 
   LayoutDashboard, Star, CheckCircle, Timer, Filter, Users, Search,
-  MapPin, Phone, Mail, Facebook, Image, ChevronLeft, ChevronRight
+  MapPin, Phone, Mail, Facebook, Image, ChevronLeft, ChevronRight, Menu, X
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
@@ -167,6 +167,7 @@ const ResultCard: React.FC<{ result: any }> = ({ result }) => (
 export const PublicLanding: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'results' | 'champions' | 'events' | 'schedule' | 'members' | 'gallery'>('dashboard');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   // Event Filters State
   const [filterCategory, setFilterCategory] = useState<string>('All');
@@ -1091,8 +1092,8 @@ export const PublicLanding: React.FC = () => {
       {/* Navbar */}
       <nav className="bg-slate-900 text-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0">
-            <div className="flex items-center space-x-3 mb-3 md:mb-0 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
               <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-white/10">
                   {stats.config?.logoUrl ? (
                       <img src={stats.config.logoUrl} alt="Logo" className="w-full h-full object-contain" />
@@ -1106,8 +1107,8 @@ export const PublicLanding: React.FC = () => {
               </div>
             </div>
             
-            {/* Desktop Navigation */}
-            <div className="flex items-center space-x-1 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
+            {/* Desktop Navigation (Visible on lg and up) */}
+            <div className="hidden lg:flex items-center space-x-1">
                {['dashboard', 'results', 'champions', 'events', 'members', 'schedule', 'gallery'].map((tab) => (
                    <button
                         key={tab}
@@ -1121,15 +1122,55 @@ export const PublicLanding: React.FC = () => {
                ))}
             </div>
 
-            <button 
-              onClick={() => navigate('/login')}
-              className="hidden md:flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg transition-colors text-xs font-medium ml-4 border border-slate-700"
-            >
-              <LogIn size={14} />
-              <span>Login</span>
-            </button>
+            <div className="hidden lg:block">
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg transition-colors text-xs font-medium border border-slate-700"
+                >
+                  <LogIn size={14} />
+                  <span>Login</span>
+                </button>
+            </div>
+
+            {/* Mobile/Tablet Menu Button (Visible below lg) */}
+            <div className="lg:hidden flex items-center">
+                <button 
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="text-slate-300 hover:text-white p-2"
+                >
+                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {isMenuOpen && (
+            <div className="lg:hidden bg-slate-800 border-t border-slate-700 shadow-xl">
+                <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    {['dashboard', 'results', 'champions', 'events', 'members', 'schedule', 'gallery'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => { setActiveTab(tab as any); setIsMenuOpen(false); }}
+                            className={`block w-full text-left px-3 py-3 rounded-md text-base font-medium capitalize ${
+                                activeTab === tab ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700'
+                            }`}
+                        >
+                            {tab === 'members' ? 'House Members' : tab}
+                        </button>
+                    ))}
+                    <div className="border-t border-slate-700 pt-3 mt-2">
+                        <button 
+                            onClick={() => { navigate('/login'); setIsMenuOpen(false); }}
+                            className="flex w-full items-center space-x-2 px-3 py-3 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-700"
+                        >
+                            <LogIn size={18} />
+                            <span>Login</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
       </nav>
 
       {/* Hero Section - ONLY on Dashboard */}

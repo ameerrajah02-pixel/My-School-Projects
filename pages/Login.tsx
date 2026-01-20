@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../services/storage';
+import { loginUser, getSiteConfig } from '../services/storage';
 import { Trophy, Lock, User } from 'lucide-react';
+import { SiteConfig } from '../types';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
+
+  useEffect(() => {
+    setSiteConfig(getSiteConfig());
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,11 +30,15 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
         <div className="bg-blue-600 p-8 text-center">
-          <div className="mx-auto w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
-            <Trophy className="text-white" size={32} />
+          <div className="mx-auto w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg overflow-hidden">
+            {siteConfig?.logoUrl ? (
+                <img src={siteConfig.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+            ) : (
+                <Trophy className="text-white" size={40} />
+            )}
           </div>
-          <h1 className="text-2xl font-bold text-white">Sulaimaniya College</h1>
-          <p className="text-blue-100">Inter House Sports Meet 2026</p>
+          <h1 className="text-2xl font-bold text-white">{siteConfig?.heroTitle || 'Sulaimaniya College'}</h1>
+          <p className="text-blue-100">{siteConfig?.heroSubtitle || 'Inter House Sports Meet 2026'}</p>
         </div>
         
         <div className="p-8">

@@ -13,6 +13,7 @@ import { UserManagement } from './pages/UserManagement';
 import { SpecialPoints } from './pages/SpecialPoints';
 import { AuditLogs } from './pages/AuditLogs';
 import { GalleryManagement } from './pages/GalleryManagement';
+import { SiteSettings } from './pages/SiteSettings';
 import { PublicLanding } from './pages/PublicLanding';
 import { Layout } from './components/Layout';
 import { getCurrentUser } from './services/storage';
@@ -99,6 +100,12 @@ const App: React.FC = () => {
         <Route path="/gallery-manage" element={
           <ProtectedRoute>
             {() => <GalleryManagement />}
+          </ProtectedRoute>
+        } />
+
+        <Route path="/site-settings" element={
+          <ProtectedRoute>
+            {() => <SiteSettings />}
           </ProtectedRoute>
         } />
 

@@ -117,6 +117,15 @@ export interface HeroImage {
   timestamp: string;
 }
 
+export interface SiteConfig {
+  logoUrl: string;
+  faviconUrl: string;
+  ogImageUrl: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  newsHeadlines: string[]; // Array of 5 strings
+}
+
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;

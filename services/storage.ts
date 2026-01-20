@@ -1,5 +1,5 @@
 
-import { User, Student, Event, Registration, Result, UserRole, House, EventCategory, EventStatus, Gender, SpecialPoint, RegistrationLog, GalleryImage, HeroImage } from '../types';
+import { User, Student, Event, Registration, Result, UserRole, House, EventCategory, EventStatus, Gender, SpecialPoint, RegistrationLog, GalleryImage, HeroImage, SiteConfig } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEYS = {
@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   LOGS: 'sms_registration_logs',
   GALLERY: 'sms_gallery',
   HERO_IMAGES: 'sms_hero_images',
+  SITE_CONFIG: 'sms_site_config',
   CURRENT_USER: 'sms_current_user'
 };
 
@@ -127,6 +128,24 @@ const seedData = () => {
       { id: 'h5', url: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&q=80&w=2070", timestamp: new Date().toISOString() }
     ];
     localStorage.setItem(STORAGE_KEYS.HERO_IMAGES, JSON.stringify(defaultHero));
+  }
+
+  if (!localStorage.getItem(STORAGE_KEYS.SITE_CONFIG)) {
+    const defaultConfig: SiteConfig = {
+      logoUrl: '',
+      faviconUrl: '',
+      ogImageUrl: '',
+      heroTitle: 'Sulaimaniya College',
+      heroSubtitle: 'Inter House Sports Meet 2026',
+      newsHeadlines: [
+        "Welcome to the Annual Sports Meet 2026!",
+        "Live scores will be updated as events complete.",
+        "Check the schedule for upcoming events.",
+        "Team Ankara currently leading the table!",
+        "Closing ceremony starts at 4:30 PM."
+      ]
+    };
+    localStorage.setItem(STORAGE_KEYS.SITE_CONFIG, JSON.stringify(defaultConfig));
   }
 };
 
@@ -343,4 +362,30 @@ export const saveHeroImage = (image: HeroImage): void => {
 export const deleteHeroImage = (id: string): void => {
   const images = getHeroImages().filter(img => img.id !== id);
   setItems(STORAGE_KEYS.HERO_IMAGES, images);
+};
+
+// --- Site Config Service ---
+
+export const getSiteConfig = (): SiteConfig => {
+  const data = localStorage.getItem(STORAGE_KEYS.SITE_CONFIG);
+  if (data) return JSON.parse(data);
+  // Fallback to defaults
+  return {
+      logoUrl: '',
+      faviconUrl: '',
+      ogImageUrl: '',
+      heroTitle: 'Sulaimaniya College',
+      heroSubtitle: 'Inter House Sports Meet 2026',
+      newsHeadlines: [
+        "Welcome to the Annual Sports Meet 2026!",
+        "Live scores will be updated as events complete.",
+        "Check the schedule for upcoming events.",
+        "Team Ankara currently leading the table!",
+        "Closing ceremony starts at 4:30 PM."
+      ]
+  };
+};
+
+export const saveSiteConfig = (config: SiteConfig): void => {
+  localStorage.setItem(STORAGE_KEYS.SITE_CONFIG, JSON.stringify(config));
 };

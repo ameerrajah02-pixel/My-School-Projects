@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, UserRole } from '../types';
-import { logoutUser } from '../services/storage';
+import { User, UserRole, SiteConfig } from '../types';
+import { logoutUser, getSiteConfig } from '../services/storage';
 import { 
   LogOut, 
   LayoutDashboard, 
@@ -15,7 +15,8 @@ import {
   Star,
   History,
   CalendarClock,
-  Image
+  Image,
+  Globe
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -26,6 +27,11 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
+
+  useEffect(() => {
+    setSiteConfig(getSiteConfig());
+  }, []);
 
   const handleLogout = () => {
     logoutUser();
@@ -47,8 +53,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
       <aside className="w-64 bg-slate-800 text-white flex flex-col flex-shrink-0 print:hidden">
         <div className="p-6 border-b border-slate-700">
           <div className="flex flex-col items-center mb-6">
-              <div className="bg-slate-700 p-3 rounded-full mb-3">
-                 <Trophy className="text-blue-400" size={32} />
+              <div className="bg-slate-700 p-3 rounded-full mb-3 overflow-hidden w-16 h-16 flex items-center justify-center">
+                 {siteConfig?.logoUrl ? (
+                     <img src={siteConfig.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                 ) : (
+                     <Trophy className="text-blue-400" size={32} />
+                 )}
               </div>
               <h1 className="text-xl font-bold tracking-tight text-center leading-tight">Sulaimaniya<br/><span className="text-blue-400">Sports 2026</span></h1>
           </div>
@@ -87,12 +97,19 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
                 <span>Gallery Manager</span>
               </button>
               
+              <button onClick={() => navigate('/site-settings')} className={navItemClass('/site-settings')}>
+                <Globe size={20} />
+                <span>Site Settings</span>
+              </button>
+              
               {/* User Management - Strictly Admin Only */}
               {user.role === UserRole.ADMIN && (
-                <button onClick={() => navigate('/users')} className={navItemClass('/users')}>
-                  <Settings size={20} />
-                  <span>User Management</span>
-                </button>
+                <>
+                    <button onClick={() => navigate('/users')} className={navItemClass('/users')}>
+                    <Settings size={20} />
+                    <span>User Management</span>
+                    </button>
+                </>
               )}
 
               <button onClick={() => navigate('/audit-logs')} className={navItemClass('/audit-logs')}>

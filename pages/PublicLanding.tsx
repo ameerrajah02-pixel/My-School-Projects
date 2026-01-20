@@ -1,12 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { House, Event, Result, Student, EventStatus, EventCategory, Gender, GalleryImage } from '../types';
-import { getEvents, getResults, getStudents, getSpecialPoints, getGalleryImages, getHeroImages } from '../services/storage';
+import { House, Event, Result, Student, EventStatus, EventCategory, Gender, GalleryImage, SiteConfig } from '../types';
+import { getEvents, getResults, getStudents, getSpecialPoints, getGalleryImages, getHeroImages, getSiteConfig } from '../services/storage';
 import { 
   Trophy, Calendar, Clock, LogIn, Medal, Award, Activity, List, 
   LayoutDashboard, Star, CheckCircle, Timer, Filter, Users, Search,
-  MapPin, Phone, Mail, Facebook, Image
+  MapPin, Phone, Mail, Facebook, Image, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
@@ -179,6 +179,11 @@ export const PublicLanding: React.FC = () => {
   const [memAge, setMemAge] = useState('All');
   const [memGender, setMemGender] = useState('All');
 
+  // Members Pagination & Random State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [randomMembers, setRandomMembers] = useState<Student[]>([]);
+  const itemsPerPage = 20;
+
   // Data State
   const [stats, setStats] = useState<{
     houseStats: HouseStat[];
@@ -195,6 +200,7 @@ export const PublicLanding: React.FC = () => {
     gallery: GalleryImage[];
     randomGallery: GalleryImage[];
     heroImages: string[];
+    config: SiteConfig | null;
   }>({
     houseStats: [],
     results: [],
@@ -206,7 +212,8 @@ export const PublicLanding: React.FC = () => {
     maxHousePoints: 100, // Default to avoid div by zero
     gallery: [],
     randomGallery: [],
-    heroImages: []
+    heroImages: [],
+    config: null
   });
 
   // Hero Carousel State
@@ -230,6 +237,31 @@ export const PublicLanding: React.FC = () => {
     const specialPoints = getSpecialPoints();
     const gallery = getGalleryImages();
     const heroes = getHeroImages().map(h => h.url);
+    const config = getSiteConfig();
+
+    // Apply Site Config to Head
+    if (config.faviconUrl) {
+        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.href = config.faviconUrl;
+    }
+    if (config.heroTitle) {
+        document.title = config.heroTitle;
+    }
+    // Attempt to set OG Image (for future reference, mostly works with SSR but good to have)
+    if (config.ogImageUrl) {
+        let meta = document.querySelector('meta[property="og:image"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('property', 'og:image');
+            document.getElementsByTagName('head')[0].appendChild(meta);
+        }
+        meta.setAttribute('content', config.ogImageUrl);
+    }
 
     // Random 4 for Dashboard
     const shuffled = [...gallery].sort(() => 0.5 - Math.random());
@@ -378,9 +410,23 @@ export const PublicLanding: React.FC = () => {
         maxHousePoints: maxPts,
         gallery,
         randomGallery,
-        heroImages: heroes
+        heroImages: heroes,
+        config
     });
   }, []);
+
+  // Initialize random members once students are loaded
+  useEffect(() => {
+    if (stats.students.length > 0 && randomMembers.length === 0) {
+        const shuffled = [...stats.students].sort(() => 0.5 - Math.random());
+        setRandomMembers(shuffled);
+    }
+  }, [stats.students]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [memSearch, memHouse, memGrade, memAge, memGender]);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return 'TBD';
@@ -619,12 +665,10 @@ export const PublicLanding: React.FC = () => {
                          />
                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
+                    {/* Removed Timestamp display here */}
                     {img.caption && (
                         <div className="p-3">
                             <p className="text-sm font-medium text-gray-700">{img.caption}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">
-                                {new Date(img.timestamp).toLocaleDateString()}
-                            </p>
                         </div>
                     )}
                 </div>
@@ -819,93 +863,49 @@ export const PublicLanding: React.FC = () => {
     );
   };
 
-  const renderSchedule = () => {
-    const sortedEvents = [...stats.allEvents]
-        .filter(e => e.schedule)
-        .sort((a, b) => new Date(a.schedule!).getTime() - new Date(b.schedule!).getTime());
-
-    return (
-        <div className="space-y-6 animate-fade-up">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                <Calendar className="mr-3 text-green-600" /> Event Schedule
-            </h2>
-
-            <div className="relative border-l-2 border-blue-100 ml-4 space-y-8 pb-8">
-                {sortedEvents.map((e, idx) => {
-                    const date = new Date(e.schedule!);
-                    const isPast = date.getTime() < Date.now();
-                    const isCompleted = e.status === EventStatus.COMPLETED;
-                    return (
-                        <div key={e.id} className="relative pl-8">
-                            {/* Dot */}
-                            <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 ${
-                                isPast ? 'bg-gray-300 border-gray-100' : 'bg-blue-600 border-white shadow-sm'
-                            }`} />
-                            
-                            <div className={`p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center ${
-                                isPast ? 'bg-gray-50 opacity-75' : 'bg-white'
-                            } ${
-                                e.genderCategory === 'Boys' ? 'border-l-4 border-l-blue-400' : 'border-l-4 border-l-pink-400'
-                            }`}>
-                                <div>
-                                    <div className="flex items-center space-x-2 text-sm font-bold text-blue-600 mb-1">
-                                        <Calendar size={14} />
-                                        <span>{date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-                                        <span className="text-gray-300">|</span>
-                                        <Clock size={14} />
-                                        <span>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                    </div>
-                                    <h3 className={`text-lg font-bold ${isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{e.name}</h3>
-                                    <p className="text-sm text-gray-500">{e.category} • {e.ageGroup} • <span className={`font-bold ${
-                                        e.genderCategory === 'Boys' ? 'text-blue-500' : 'text-pink-500'
-                                    }`}>{e.genderCategory}</span></p>
-                                </div>
-                                <div className="mt-2 md:mt-0">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                                        e.status === EventStatus.COMPLETED ? 'bg-gray-100 text-gray-500' : 
-                                        'bg-blue-50 text-blue-700'
-                                    }`}>
-                                        {e.status}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-                {sortedEvents.length === 0 && (
-                    <div className="pl-8 text-gray-500 italic">No scheduled events yet.</div>
-                )}
-            </div>
-        </div>
-    );
-  };
-
   const renderHouseMembers = () => {
     // Unique values for filters
-    const grades = ['All', ...Array.from(new Set(stats.students.map(s => s.grade))).sort((a,b) => parseInt(a)-parseInt(b))];
+    const grades = ['All', ...Array.from(new Set(stats.students.map(s => s.grade))).sort((a,b) => parseInt(a as string)-parseInt(b as string))];
     const houses = ['All', ...Object.values(House)];
     
-    const filteredMembers = stats.students.filter(s => {
-        const age = calculateAge(s.dateOfBirth);
-        
-        const matchSearch = s.fullName.toLowerCase().includes(memSearch.toLowerCase()) || s.admissionNo.includes(memSearch);
-        const matchHouse = memHouse === 'All' || s.house === memHouse;
-        const matchGrade = memGrade === 'All' || s.grade === memGrade;
-        const matchGender = memGender === 'All' || s.gender === memGender;
-        
-        let matchAge = true;
-        if (memAge !== 'All') {
-             matchAge = age.toString() === memAge;
-        }
+    // Check if any filter is active (not default)
+    const isFilterActive = memSearch !== '' || memHouse !== 'All' || memGrade !== 'All' || memAge !== 'All' || memGender !== 'All';
 
-        return matchSearch && matchHouse && matchGrade && matchGender && matchAge;
-    });
+    let displayList: Student[] = [];
+
+    if (!isFilterActive) {
+        // Show random initial members
+        displayList = randomMembers;
+    } else {
+        // Filter logic
+        displayList = stats.students.filter(s => {
+            const age = calculateAge(s.dateOfBirth);
+            
+            const matchSearch = s.fullName.toLowerCase().includes(memSearch.toLowerCase()) || s.admissionNo.includes(memSearch);
+            const matchHouse = memHouse === 'All' || s.house === memHouse;
+            const matchGrade = memGrade === 'All' || s.grade === memGrade;
+            const matchGender = memGender === 'All' || s.gender === memGender;
+            
+            let matchAge = true;
+            if (memAge !== 'All') {
+                 matchAge = age.toString() === memAge;
+            }
+
+            return matchSearch && matchHouse && matchGrade && matchGender && matchAge;
+        });
+    }
+
+    // Pagination Logic
+    const totalPages = Math.ceil(displayList.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentMembers = displayList.slice(startIndex, startIndex + itemsPerPage);
 
     return (
         <div className="space-y-6 animate-fade-up">
             <div className="flex flex-col gap-4 mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                    <Users className="mr-3 text-purple-600" /> House Members Directory
+                    <Users className="mr-3 text-purple-600" /> 
+                    {isFilterActive ? 'Search Results' : 'Featured Members (Random Selection)'}
                 </h2>
                 
                 {/* Search & Filters */}
@@ -962,7 +962,7 @@ export const PublicLanding: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredMembers.map(s => (
+                            {currentMembers.map(s => (
                                 <tr key={s.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 font-mono text-sm text-gray-500">{s.admissionNo}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900">{s.fullName}</td>
@@ -979,14 +979,97 @@ export const PublicLanding: React.FC = () => {
                                     <td className="px-6 py-4 text-gray-600">{calculateAge(s.dateOfBirth)}</td>
                                 </tr>
                             ))}
-                             {filteredMembers.length === 0 && (
+                             {currentMembers.length === 0 && (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400">No students found matching criteria.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
-                <div className="p-4 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 text-center">
-                    Displaying {filteredMembers.length} students
+                
+                {/* Footer Info / Pagination */}
+                <div className="p-4 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="text-xs text-gray-500 text-center md:text-left">
+                        Displaying {startIndex + 1}-{Math.min(startIndex + itemsPerPage, displayList.length)} of {displayList.length} students
+                    </div>
+                    
+                    {/* Pagination Controls - Show only if pages > 1 */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center space-x-2">
+                            <button 
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                            >
+                                <ChevronLeft size={20} className="text-gray-600" />
+                            </button>
+                            <span className="text-sm font-medium text-gray-700 px-2">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button 
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                            >
+                                <ChevronRight size={20} className="text-gray-600" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+  };
+
+  const renderSchedule = () => {
+    // Group events by date
+    const sortedEvents = [...stats.allEvents].filter(e => e.schedule).sort((a, b) => new Date(a.schedule!).getTime() - new Date(b.schedule!).getTime());
+    
+    return (
+        <div className="space-y-6 animate-fade-up">
+             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <Calendar className="mr-3 text-green-600" /> Event Schedule
+            </h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="divide-y divide-gray-100">
+                    {sortedEvents.map(e => {
+                        const date = new Date(e.schedule!);
+                        return (
+                            <div key={e.id} className="p-6 flex flex-col md:flex-row md:items-center gap-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex-shrink-0 flex flex-col items-center justify-center bg-blue-50 text-blue-700 w-16 h-16 rounded-xl border border-blue-100">
+                                    <span className="text-xs font-bold uppercase">{date.toLocaleString('default', { month: 'short' })}</span>
+                                    <span className="text-2xl font-black">{date.getDate()}</span>
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                         <span className="text-sm font-bold text-gray-900">{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                         <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+                                            e.status === EventStatus.COMPLETED ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                                            e.status === EventStatus.CLOSED ? 'bg-red-50 text-red-600 border-red-100' :
+                                            'bg-green-50 text-green-600 border-green-100'
+                                         }`}>{e.status}</span>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900">{e.name}</h3>
+                                    <p className="text-sm text-gray-500">{e.category} • {e.ageGroup} • {e.genderCategory}</p>
+                                </div>
+                                <div className="text-right hidden md:block">
+                                    {e.isTeamEvent ? (
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">
+                                            Team Event
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                                            Individual
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {sortedEvents.length === 0 && (
+                        <div className="p-12 text-center text-gray-400">
+                            No events have been scheduled yet.
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -994,13 +1077,15 @@ export const PublicLanding: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans pb-12">
       {/* CSS Animations */}
       <style>{`
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-up { animation: fadeInUp 0.5s ease-out forwards; }
         @keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         .animate-text-shimmer { background-size: 200% auto; animation: textShimmer 3s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-marquee { animation: marquee 60s linear infinite; white-space: nowrap; }
       `}</style>
 
       {/* Navbar */}
@@ -1008,9 +1093,15 @@ export const PublicLanding: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0">
             <div className="flex items-center space-x-3 mb-3 md:mb-0 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-              <Trophy className="text-yellow-400" size={24} />
+              <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-white/10">
+                  {stats.config?.logoUrl ? (
+                      <img src={stats.config.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                      <Trophy className="text-yellow-400" size={20} />
+                  )}
+              </div>
               <div>
-                <h1 className="text-base font-bold leading-none">Sulaimaniya College</h1>
+                <h1 className="text-base font-bold leading-none">{stats.config?.heroTitle || 'Sulaimaniya College'}</h1>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Sports Meet 2026</p>
               </div>
             </div>
@@ -1055,11 +1146,11 @@ export const PublicLanding: React.FC = () => {
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10 pb-8">
                 <h1 className="animate-fade-up text-4xl md:text-7xl font-black tracking-tighter mb-4 drop-shadow-2xl text-white">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-100 via-white to-blue-100 animate-text-shimmer">
-                        Sulaimaniya College
+                        {stats.config?.heroTitle || 'Sulaimaniya College'}
                     </span>
                 </h1>
                 <p className="animate-fade-up text-lg md:text-2xl text-blue-100 font-light tracking-wide border-b border-yellow-500 pb-2 mb-4" style={{animationDelay: '0.2s'}}>
-                    Inter House Sports Meet 2026
+                    {stats.config?.heroSubtitle || 'Inter House Sports Meet 2026'}
                 </p>
             </div>
         </div>
@@ -1132,6 +1223,32 @@ export const PublicLanding: React.FC = () => {
              </p>
         </div>
       </footer>
+
+      {/* News Ticker - Fixed Bottom */}
+      {stats.config?.newsHeadlines && stats.config.newsHeadlines.length > 0 && (
+          <div className="fixed bottom-0 left-0 right-0 bg-blue-900 text-white z-50 h-10 flex items-center overflow-hidden shadow-lg border-t border-blue-800">
+              <div className="bg-blue-800 h-full px-4 flex items-center z-10 shrink-0 font-bold text-xs uppercase tracking-wider text-blue-100 shadow-md">
+                  Latest Updates
+              </div>
+              <div className="flex-1 overflow-hidden relative h-full flex items-center">
+                  <div className="animate-marquee whitespace-nowrap flex items-center">
+                      {stats.config.newsHeadlines.map((news, idx) => (
+                          <span key={idx} className="mx-8 text-sm font-medium flex items-center">
+                              <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3 inline-block" />
+                              {news}
+                          </span>
+                      ))}
+                      {/* Duplicate for smooth loop */}
+                      {stats.config.newsHeadlines.map((news, idx) => (
+                          <span key={`dup-${idx}`} className="mx-8 text-sm font-medium flex items-center">
+                              <span className="w-2 h-2 bg-yellow-400 rounded-full mr-3 inline-block" />
+                              {news}
+                          </span>
+                      ))}
+                  </div>
+              </div>
+          </div>
+      )}
     </div>
   );
 };

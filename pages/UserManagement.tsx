@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, UserRole, House } from '../types';
 import { getUsers, saveUser, deleteUser, getCurrentUser } from '../services/storage';
-import { Plus, Trash2, Edit2, Shield, Search, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Shield, Search, X, Eye, EyeOff } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 export const UserManagement: React.FC = () => {
@@ -11,6 +11,10 @@ export const UserManagement: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // Password Visibility State
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
+  const [showFormPassword, setShowFormPassword] = useState(false);
 
   const [formData, setFormData] = useState<Partial<User>>({
     username: '',
@@ -83,6 +87,7 @@ export const UserManagement: React.FC = () => {
   };
 
   const openModal = (user?: User) => {
+    setShowFormPassword(false); // Reset visibility for modal
     if (user) {
       setEditingUser(user);
       setFormData(user);
@@ -101,6 +106,18 @@ export const UserManagement: React.FC = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingUser(null);
+  };
+
+  const togglePasswordVisibility = (userId: string) => {
+    setVisiblePasswords(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(userId)) {
+            newSet.delete(userId);
+        } else {
+            newSet.add(userId);
+        }
+        return newSet;
+    });
   };
 
   return (
@@ -139,7 +156,16 @@ export const UserManagement: React.FC = () => {
                     {currentUser?.id === u.id && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">You</span>}
                 </td>
                 <td className="px-6 py-4 text-gray-500 font-mono">
-                   {u.password}
+                   <div className="flex items-center space-x-2">
+                       <span>{visiblePasswords.has(u.id) ? u.password : '••••••••'}</span>
+                       <button 
+                         onClick={() => togglePasswordVisibility(u.id)}
+                         className="text-gray-400 hover:text-gray-600 focus:outline-none p-1 rounded hover:bg-gray-100"
+                         title={visiblePasswords.has(u.id) ? "Hide Password" : "Show Password"}
+                       >
+                           {visiblePasswords.has(u.id) ? <EyeOff size={14} /> : <Eye size={14} />}
+                       </button>
+                   </div>
                 </td>
                 <td className="px-6 py-4 text-gray-600">
                     <span className={`px-2 py-1 rounded text-xs font-bold 
@@ -209,7 +235,23 @@ export const UserManagement: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <input required type="text" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Set password" />
+                  <div className="relative">
+                      <input 
+                        required 
+                        type={showFormPassword ? "text" : "password"} 
+                        value={formData.password} 
+                        onChange={e => setFormData({...formData, password: e.target.value})} 
+                        className="w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                        placeholder="Set password" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowFormPassword(!showFormPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                      >
+                          {showFormPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                  </div>
                 </div>
                 
                 <div>

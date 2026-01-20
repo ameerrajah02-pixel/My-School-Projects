@@ -4,7 +4,8 @@ import { House, Event, Result, Student, EventStatus, EventCategory, Gender } fro
 import { getEvents, getResults, getStudents, getSpecialPoints } from '../services/storage';
 import { 
   Trophy, Calendar, Clock, LogIn, Medal, Award, Activity, List, 
-  LayoutDashboard, Star, CheckCircle, Timer, Filter, Users, Search
+  LayoutDashboard, Star, CheckCircle, Timer, Filter, Users, Search,
+  MapPin, Phone, Mail, Facebook
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
@@ -35,10 +36,10 @@ const HouseRankCard: React.FC<{ stat: HouseStat; rank: number; maxPoints: number
     ];
 
     return (
-        <div className={`relative overflow-hidden rounded-2xl p-6 shadow-lg border-2 transition-transform transform hover:scale-105 bg-white ${
-            rank === 1 ? 'border-yellow-400 ring-4 ring-yellow-400/20' :
-            rank === 2 ? 'border-gray-300' :
-            'border-orange-200'
+        <div className={`relative overflow-hidden rounded-2xl p-6 shadow-lg border-2 transition-transform transform hover:scale-105 ${
+            rank === 1 ? 'border-yellow-400 ring-4 ring-yellow-400/20 bg-gradient-to-br from-yellow-50 via-white to-yellow-50' :
+            rank === 2 ? 'border-gray-300 bg-gradient-to-br from-gray-50 via-white to-gray-100' :
+            'border-orange-200 bg-gradient-to-br from-orange-50 via-white to-orange-50'
         }`}>
             {/* Gauge Section */}
             <div className="h-32 relative mb-2">
@@ -386,10 +387,10 @@ export const PublicLanding: React.FC = () => {
   const renderDashboard = () => (
     <div className="space-y-8 animate-fade-up">
         {/* Progress Bar */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-2xl shadow-sm border border-blue-100 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                    <Activity size={20} />
+                <div className="p-3 bg-white text-blue-600 rounded-xl shadow-sm">
+                    <Activity size={24} />
                 </div>
                 <div>
                     <h3 className="text-sm font-bold text-gray-700 uppercase">Meet Progress</h3>
@@ -397,14 +398,14 @@ export const PublicLanding: React.FC = () => {
                 </div>
             </div>
             <div className="flex-1 mx-6">
-                <div className="w-full bg-gray-100 rounded-full h-3">
+                <div className="w-full bg-white rounded-full h-4 shadow-inner border border-gray-100">
                     <div 
-                        className="bg-blue-600 h-3 rounded-full transition-all duration-1000 ease-out" 
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-4 rounded-full transition-all duration-1000 ease-out shadow-sm" 
                         style={{ width: `${stats.progress.percentage}%` }}
                     />
                 </div>
             </div>
-            <span className="text-lg font-bold text-gray-900">{stats.progress.percentage}%</span>
+            <span className="text-xl font-black text-gray-900">{stats.progress.percentage}%</span>
         </div>
 
         {/* Overall Standings */}
@@ -422,9 +423,12 @@ export const PublicLanding: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Medal Tally */}
             <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                <div className="p-4 bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 flex justify-between items-center">
                     <h2 className="font-bold text-gray-800 flex items-center">
-                        <Medal className="mr-2 text-yellow-500" size={20} /> Medal Tally
+                        <div className="bg-white p-1.5 rounded-lg shadow-sm mr-2 text-yellow-600">
+                             <Medal size={18} />
+                        </div> 
+                        Medal Tally
                     </h2>
                 </div>
                 <div className="flex-1 p-0">
@@ -455,9 +459,12 @@ export const PublicLanding: React.FC = () => {
 
              {/* Recent Results (Top 5) */}
              <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100 flex justify-between items-center">
                      <h2 className="font-bold text-gray-800 flex items-center">
-                        <CheckCircle className="mr-2 text-green-500" size={20} /> Recently Completed
+                        <div className="bg-white p-1.5 rounded-lg shadow-sm mr-2 text-emerald-600">
+                            <CheckCircle size={18} />
+                        </div>
+                        Recently Completed
                     </h2>
                     <button onClick={() => setActiveTab('results')} className="text-xs text-blue-600 hover:underline">View All</button>
                 </div>
@@ -514,15 +521,18 @@ export const PublicLanding: React.FC = () => {
 
         {/* Upcoming */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 bg-gray-50 border-b border-gray-200">
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-white border-b border-blue-100">
                     <h2 className="font-bold text-gray-800 flex items-center">
-                    <Clock className="mr-2 text-blue-500" size={20} /> Upcoming Events
+                    <div className="bg-white p-1.5 rounded-lg shadow-sm mr-2 text-blue-600">
+                         <Clock size={18} />
+                    </div>
+                    Upcoming Events
                 </h2>
             </div>
             <div className="divide-y divide-gray-100">
                 {stats.upcomingEvents.slice(0, 5).map(e => (
                     <div key={e.id} className={`p-4 flex items-center justify-between hover:bg-gray-50 transition-colors ${
-                        e.genderCategory === 'Boys' ? 'bg-blue-50/30' : 'bg-pink-50/30'
+                        e.genderCategory === 'Boys' ? 'bg-blue-50/50' : 'bg-pink-50/50'
                     }`}>
                         <div>
                             <p className="font-medium text-gray-900">{e.name}</p>
@@ -992,11 +1002,11 @@ export const PublicLanding: React.FC = () => {
             {heroImages.map((img, index) => (
             <div 
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-40' : 'opacity-0'}`}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-75' : 'opacity-0'}`}
                 style={{ backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
             />
             ))}
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-slate-900/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-slate-900/50 to-slate-900/10" />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10 pb-8">
                 <h1 className="animate-fade-up text-4xl md:text-7xl font-black tracking-tighter mb-4 drop-shadow-2xl text-white">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-100 via-white to-blue-100 animate-text-shimmer">
@@ -1020,9 +1030,61 @@ export const PublicLanding: React.FC = () => {
         {activeTab === 'schedule' && renderSchedule()}
       </main>
 
-      <footer className="text-center text-gray-400 text-sm py-8 border-t border-gray-200 mt-12 bg-white">
-            <p>&copy; 2026 Sulaimaniya College Sports Meet.</p>
-            <p className="text-xs mt-1 text-gray-300">Official Event Management System</p>
+      <footer className="bg-slate-900 text-slate-400 text-sm py-12 mt-12 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Contact Info */}
+            <div>
+                <h4 className="text-white font-bold uppercase tracking-wider mb-4">Contact Us</h4>
+                <ul className="space-y-3">
+                    <li className="flex items-start">
+                        <MapPin size={18} className="mr-3 text-blue-500 shrink-0" />
+                        <span>Sulaimaniya College,<br/>Kannattota</span>
+                    </li>
+                    <li className="flex items-center">
+                        <Phone size={18} className="mr-3 text-blue-500 shrink-0" />
+                        <span>036 226 6494</span>
+                    </li>
+                    <li className="flex items-center">
+                        <Mail size={18} className="mr-3 text-blue-500 shrink-0" />
+                        <span>sulaimaniyacc@gmail.com</span>
+                    </li>
+                </ul>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+                <h4 className="text-white font-bold uppercase tracking-wider mb-4">Navigation</h4>
+                <ul className="space-y-2">
+                    <li><button onClick={() => setActiveTab('dashboard')} className="hover:text-blue-400 transition-colors text-left">Dashboard</button></li>
+                    <li><button onClick={() => setActiveTab('results')} className="hover:text-blue-400 transition-colors text-left">Results</button></li>
+                    <li><button onClick={() => setActiveTab('events')} className="hover:text-blue-400 transition-colors text-left">Events</button></li>
+                </ul>
+            </div>
+
+             {/* Social & Brand */}
+            <div>
+                 <h4 className="text-white font-bold uppercase tracking-wider mb-4">Connect With Us</h4>
+                 <a 
+                    href="https://www.facebook.com/smart.sulaimaniya/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-2 bg-[#1877F2] hover:bg-[#166fe5] text-white px-4 py-2 rounded-lg transition-colors mb-6"
+                 >
+                    <Facebook size={20} />
+                    <span className="font-medium">Smart Sulaimaniya Media</span>
+                 </a>
+                 <p className="text-xs text-slate-500">
+                    &copy; 2026 Sulaimaniya College Sports Meet.<br/>
+                    All rights reserved.
+                 </p>
+            </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-6 border-t border-slate-800 text-center">
+             <p className="text-[10px] uppercase tracking-widest text-slate-600 font-bold">
+                Developed by <span className="text-blue-500">Smart Sulaimaniya Media</span>
+             </p>
+        </div>
       </footer>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { User, Student, Event, Result, Registration, House, UserRole } from '../types';
 import { getStudents, getEvents, getResults, getRegistrations, getSpecialPoints } from '../services/storage';
@@ -169,7 +170,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        {/* Main Bar Chart - Points */}
+        {/* Main Bar Chart - Points (Vertical) */}
         <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h2 className="text-lg font-bold text-gray-800 mb-6">Live House Points (Leaderboard)</h2>
           <div className="h-80">
@@ -212,54 +213,42 @@ export const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Pie Chart - Points Share */}
+        {/* Horizontal Bar Chart - Points Distribution */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Points Distribution (Share)</h2>
+           <h2 className="text-lg font-bold text-gray-800 mb-4">Points Distribution</h2>
            <div className="h-64">
              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                    <Pie
-                        data={stats.housePoints}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="points"
-                    >
+                <BarChart layout="vertical" data={stats.housePoints} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12, fontWeight: 'bold'}} />
+                    <Tooltip content={<CustomTooltip />} cursor={{fill: 'transparent'}} />
+                    <Bar dataKey="points" radius={[0, 4, 4, 0]} barSize={32}>
                         {stats.housePoints.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="bottom" height={36}/>
-                </PieChart>
+                    </Bar>
+                </BarChart>
              </ResponsiveContainer>
            </div>
         </div>
 
-        {/* Pie Chart - Medal Share */}
+        {/* Horizontal Bar Chart - Total Medals Won */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Total Medals Won (Share)</h2>
+           <h2 className="text-lg font-bold text-gray-800 mb-4">Total Medals Won</h2>
            <div className="h-64">
              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                    <Pie
-                        data={stats.houseMedals}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                    >
+                <BarChart layout="vertical" data={stats.houseMedals} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12, fontWeight: 'bold'}} />
+                    <Tooltip content={<CustomTooltip />} cursor={{fill: 'transparent'}} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
                         {stats.houseMedals.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="bottom" height={36}/>
-                </PieChart>
+                    </Bar>
+                </BarChart>
              </ResponsiveContainer>
            </div>
         </div>

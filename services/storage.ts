@@ -52,6 +52,17 @@ const seedData = () => {
       { id: 'e1', name: '100m Sprint', category: EventCategory.ATHLETIC, ageGroup: 'Under 20', isTeamEvent: false, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-15T09:00' },
       { id: 'e2', name: 'Relay 4x100m', category: EventCategory.ATHLETIC, ageGroup: 'Under 18', isTeamEvent: true, genderCategory: 'Girls', status: EventStatus.OPEN, schedule: '2026-03-15T11:30' },
       { id: 'e3', name: 'Volleyball', category: EventCategory.MAJOR_GAME, ageGroup: 'Open', isTeamEvent: true, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-16T15:00' },
+      // Added 10 new events for testing
+      { id: 'e4', name: '200m Sprint', category: EventCategory.ATHLETIC, ageGroup: 'Under 16', isTeamEvent: false, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-15T10:00' },
+      { id: 'e5', name: 'Long Jump', category: EventCategory.ATHLETIC, ageGroup: 'Under 18', isTeamEvent: false, genderCategory: 'Girls', status: EventStatus.OPEN, schedule: '2026-03-15T13:00' },
+      { id: 'e6', name: 'High Jump', category: EventCategory.ATHLETIC, ageGroup: 'Under 20', isTeamEvent: false, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-15T14:30' },
+      { id: 'e7', name: 'Shot Put', category: EventCategory.ATHLETIC, ageGroup: 'Over 15', isTeamEvent: false, genderCategory: 'Girls', status: EventStatus.OPEN, schedule: '2026-03-16T09:30' },
+      { id: 'e8', name: 'Discus Throw', category: EventCategory.ATHLETIC, ageGroup: 'Under 16', isTeamEvent: false, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-16T11:00' },
+      { id: 'e9', name: 'Cricket', category: EventCategory.MAJOR_GAME, ageGroup: 'Under 20', isTeamEvent: true, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-17T09:00' },
+      { id: 'e10', name: 'Netball', category: EventCategory.MAJOR_GAME, ageGroup: 'Under 18', isTeamEvent: true, genderCategory: 'Girls', status: EventStatus.OPEN, schedule: '2026-03-17T14:00' },
+      { id: 'e11', name: '4x400m Relay', category: EventCategory.ATHLETIC, ageGroup: 'Under 20', isTeamEvent: true, genderCategory: 'Mixed', status: EventStatus.OPEN, schedule: '2026-03-18T16:00' },
+      { id: 'e12', name: '800m Run', category: EventCategory.ATHLETIC, ageGroup: 'Under 14', isTeamEvent: false, genderCategory: 'Boys', status: EventStatus.OPEN, schedule: '2026-03-16T08:00' },
+      { id: 'e13', name: 'Javelin Throw', category: EventCategory.ATHLETIC, ageGroup: 'Under 18', isTeamEvent: false, genderCategory: 'Girls', status: EventStatus.OPEN, schedule: '2026-03-16T10:30' },
     ];
     localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(defaultEvents));
   }
@@ -69,6 +80,17 @@ const seedData = () => {
         { id: 's8', fullName: 'Y. Banu', admissionNo: '7008', grade: '12', dateOfBirth: '2008-02-14', gender: Gender.FEMALE, house: House.ANKARA },
         { id: 's9', fullName: 'D. Gunathilaka', admissionNo: '7009', grade: '6', dateOfBirth: '2014-05-30', gender: Gender.MALE, house: House.ANKARA },
         { id: 's10', fullName: 'A. Takia', admissionNo: '7010', grade: '10', dateOfBirth: '2010-12-01', gender: Gender.FEMALE, house: House.ANKARA },
+        // Added 10 more for Ankara
+        { id: 's31', fullName: 'M. Amir', admissionNo: '7011', grade: '9', dateOfBirth: '2011-03-12', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's32', fullName: 'K. Perera', admissionNo: '7012', grade: '11', dateOfBirth: '2009-07-22', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's33', fullName: 'J. Silva', admissionNo: '7013', grade: '8', dateOfBirth: '2012-11-05', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's34', fullName: 'R. Fernando', admissionNo: '7014', grade: '13', dateOfBirth: '2007-02-14', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's35', fullName: 'S. Cooray', admissionNo: '7015', grade: '10', dateOfBirth: '2010-09-30', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's36', fullName: 'T. Dilshan', admissionNo: '7016', grade: '7', dateOfBirth: '2013-05-18', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's37', fullName: 'A. Mendis', admissionNo: '7017', grade: '12', dateOfBirth: '2008-12-01', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's38', fullName: 'P. Jayawardena', admissionNo: '7018', grade: '6', dateOfBirth: '2014-08-20', gender: Gender.FEMALE, house: House.ANKARA },
+        { id: 's39', fullName: 'D. Karunaratne', admissionNo: '7019', grade: '11', dateOfBirth: '2009-04-10', gender: Gender.MALE, house: House.ANKARA },
+        { id: 's40', fullName: 'N. Dickwella', admissionNo: '7020', grade: '9', dateOfBirth: '2011-01-25', gender: Gender.FEMALE, house: House.ANKARA },
 
         // Bagdad (Pink)
         { id: 's11', fullName: 'F. Ahmed', admissionNo: '8001', grade: '13', dateOfBirth: '2007-04-10', gender: Gender.MALE, house: House.BAGDAD },
@@ -81,6 +103,17 @@ const seedData = () => {
         { id: 's18', fullName: 'Z. Rimzan', admissionNo: '8008', grade: '6', dateOfBirth: '2014-08-25', gender: Gender.FEMALE, house: House.BAGDAD },
         { id: 's19', fullName: 'O. Khayam', admissionNo: '8009', grade: '13', dateOfBirth: '2007-12-12', gender: Gender.MALE, house: House.BAGDAD },
         { id: 's20', fullName: 'S. Perera', admissionNo: '8010', grade: '11', dateOfBirth: '2009-03-30', gender: Gender.FEMALE, house: House.BAGDAD },
+        // Added 10 more for Bagdad
+        { id: 's41', fullName: 'B. Azam', admissionNo: '8011', grade: '10', dateOfBirth: '2010-06-15', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's42', fullName: 'M. Rizwan', admissionNo: '8012', grade: '12', dateOfBirth: '2008-03-22', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's43', fullName: 'S. Afridi', admissionNo: '8013', grade: '8', dateOfBirth: '2012-09-05', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's44', fullName: 'H. Rauf', admissionNo: '8014', grade: '13', dateOfBirth: '2007-11-14', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's45', fullName: 'N. Shah', admissionNo: '8015', grade: '9', dateOfBirth: '2011-02-28', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's46', fullName: 'I. Ul-Haq', admissionNo: '8016', grade: '7', dateOfBirth: '2013-07-18', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's47', fullName: 'W. Riaz', admissionNo: '8017', grade: '11', dateOfBirth: '2009-12-01', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's48', fullName: 'Y. Shah', admissionNo: '8018', grade: '6', dateOfBirth: '2014-04-20', gender: Gender.FEMALE, house: House.BAGDAD },
+        { id: 's49', fullName: 'A. Ali', admissionNo: '8019', grade: '12', dateOfBirth: '2008-08-10', gender: Gender.MALE, house: House.BAGDAD },
+        { id: 's50', fullName: 'S. Khan', admissionNo: '8020', grade: '10', dateOfBirth: '2010-01-25', gender: Gender.FEMALE, house: House.BAGDAD },
 
         // Cairo (Maroon)
         { id: 's21', fullName: 'S. Jayasuriya', admissionNo: '9001', grade: '12', dateOfBirth: '2008-01-01', gender: Gender.MALE, house: House.CAIRO },
@@ -93,6 +126,17 @@ const seedData = () => {
         { id: 's28', fullName: 'R. Faleel', admissionNo: '9008', grade: '6', dateOfBirth: '2014-11-30', gender: Gender.FEMALE, house: House.CAIRO },
         { id: 's29', fullName: 'T. Kaushal', admissionNo: '9009', grade: '12', dateOfBirth: '2008-08-05', gender: Gender.MALE, house: House.CAIRO },
         { id: 's30', fullName: 'M. Muneer', admissionNo: '9010', grade: '13', dateOfBirth: '2007-03-25', gender: Gender.FEMALE, house: House.CAIRO },
+        // Added 10 more for Cairo
+        { id: 's51', fullName: 'V. Kohli', admissionNo: '9011', grade: '11', dateOfBirth: '2009-05-15', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's52', fullName: 'R. Sharma', admissionNo: '9012', grade: '13', dateOfBirth: '2007-10-22', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's53', fullName: 'K. Rahul', admissionNo: '9013', grade: '9', dateOfBirth: '2011-01-05', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's54', fullName: 'H. Pandya', admissionNo: '9014', grade: '12', dateOfBirth: '2008-04-14', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's55', fullName: 'R. Jadeja', admissionNo: '9015', grade: '8', dateOfBirth: '2012-11-30', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's56', fullName: 'J. Bumrah', admissionNo: '9016', grade: '7', dateOfBirth: '2013-06-18', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's57', fullName: 'M. Shami', admissionNo: '9017', grade: '10', dateOfBirth: '2010-09-01', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's58', fullName: 'S. Gill', admissionNo: '9018', grade: '6', dateOfBirth: '2014-03-20', gender: Gender.FEMALE, house: House.CAIRO },
+        { id: 's59', fullName: 'I. Kishan', admissionNo: '9019', grade: '11', dateOfBirth: '2009-07-10', gender: Gender.MALE, house: House.CAIRO },
+        { id: 's60', fullName: 'S. Iyer', admissionNo: '9020', grade: '9', dateOfBirth: '2011-12-25', gender: Gender.FEMALE, house: House.CAIRO },
     ];
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(defaultStudents));
   }
